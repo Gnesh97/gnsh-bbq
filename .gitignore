@@ -1,0 +1,14 @@
+# Local tooling and metadata
+.c*/
+.a*/
+
+# Runtime and local environment files
+node_modules/
+dist/
+build/
+*.log
+*.tmp
+*.bak
+.env
+.env.*
+!.env.example

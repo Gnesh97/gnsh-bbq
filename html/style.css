@@ -1,0 +1,833 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    /* FiveM CEF'de Turkce glifleri tutarli gosteren yerel font zinciri. */
+    font-family: Arial, "Segoe UI", Tahoma, sans-serif;
+    user-select: none;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+html, body {
+    background: transparent !important;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* ----------------------------------------------------
+   KONUM: Ekranin SAG ORTA kismi
+   NOT: backdrop-filter KULLANILMIYOR (CEF'te saydam
+   sayfada siyah kutu olusturuyor)
+---------------------------------------------------- */
+#heat-hud-container {
+    position: fixed;
+    top: 50%;
+    right: 42px;
+    transform: translateY(-50%);
+    z-index: 999999;
+    display: none;
+}
+
+#heat-hud-container.active {
+    display: block;
+    animation: hudSlideIn 0.35s ease-out;
+}
+
+/* Mangaldan uzaklasinca: girisin tersi (fade out + saga kayma).
+   .active'ten SONRA tanimli oldugu icin animasyonu ezer. */
+#heat-hud-container.hiding {
+    animation: hudSlideOut 0.3s ease-in forwards;
+}
+
+@keyframes hudSlideIn {
+    from { opacity: 0; transform: translate(24px, -50%); }
+    to   { opacity: 1; transform: translate(0, -50%); }
+}
+
+@keyframes hudSlideOut {
+    from { opacity: 1; transform: translate(0, -50%); }
+    to   { opacity: 0; transform: translate(24px, -50%); }
+}
+
+/* ---------------- Termometre Govdesi ---------------- */
+.thermo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 104px;
+    padding: 14px 10px 12px;
+    background: rgba(12, 14, 20, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+}
+
+/* ---------------- Ust Kisim ---------------- */
+.thermo-head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.flame-badge {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(247, 151, 30, 0.18);
+    border: 1px solid rgba(247, 151, 30, 0.45);
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.flame-symbol {
+    font-size: 15px;
+    animation: flamePulse 1.8s infinite ease-in-out;
+}
+
+@keyframes flamePulse {
+    0%, 100% { transform: scale(1); opacity: 0.9; }
+    50%      { transform: scale(1.16); opacity: 1; }
+}
+
+.heat-value {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #f1f5f9;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    transition: color 0.3s ease;
+}
+
+/* ---------------- Dikey Tup ---------------- */
+.tube-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 2px 0;
+}
+
+.tube {
+    position: relative;
+    width: 20px;
+    height: 150px;
+    /* Alt kenar yok: hazne (bulb) ile tek parca gorunmesi icin */
+    border-radius: 12px 12px 0 0;
+    background: rgba(255, 255, 255, 0.09);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-bottom: none;
+    overflow: hidden;
+}
+
+.tube-fill {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 0%;
+    border-radius: 10px 10px 0 0;
+    background: linear-gradient(180deg, #ffd200, #f7971e);
+    box-shadow: 0 0 14px rgba(247, 151, 30, 0.75);
+    transition: height 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                background 0.3s ease,
+                box-shadow 0.3s ease;
+}
+
+.tick {
+    position: absolute;
+    right: 0;
+    width: 7px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.28);
+}
+
+/* Termometre haznesi (bulb) - tupun altina binerek kopukluk birakmaz */
+.bulb {
+    position: relative;
+    z-index: 2;
+    width: 34px;
+    height: 34px;
+    margin-top: -14px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.09);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bulb-core {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #ffd200, #f7971e);
+    box-shadow: 0 0 14px rgba(247, 151, 30, 0.8);
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ---------------- Isi Seviyesi Temalari ---------------- */
+/* Yuksek Isi (%80 - %100) */
+.thermo.heat-high .tube-fill,
+.thermo.heat-high .bulb-core {
+    background: linear-gradient(180deg, #ff416c, #ff4b2b);
+    box-shadow: 0 0 18px rgba(255, 65, 108, 0.9);
+}
+.thermo.heat-high .flame-badge {
+    background: rgba(255, 65, 108, 0.25);
+    border-color: rgba(255, 65, 108, 0.6);
+}
+.thermo.heat-high .heat-value { color: #ff6b52; }
+
+/* Normal Isi (%40 - %79) */
+.thermo.heat-normal .tube-fill,
+.thermo.heat-normal .bulb-core {
+    background: linear-gradient(180deg, #ffd200, #f7971e);
+    box-shadow: 0 0 16px rgba(247, 151, 30, 0.8);
+}
+.thermo.heat-normal .flame-badge {
+    background: rgba(247, 151, 30, 0.22);
+    border-color: rgba(247, 151, 30, 0.5);
+}
+.thermo.heat-normal .heat-value { color: #ffc44d; }
+
+/* Dusuk Isi (%0 - %39) */
+.thermo.heat-low .tube-fill,
+.thermo.heat-low .bulb-core {
+    background: linear-gradient(180deg, #96c93d, #00b09b);
+    box-shadow: 0 0 14px rgba(0, 176, 155, 0.7);
+}
+.thermo.heat-low .flame-badge {
+    background: rgba(0, 176, 155, 0.22);
+    border-color: rgba(0, 176, 155, 0.5);
+}
+.thermo.heat-low .heat-value { color: #7fe0c4; }
+
+/* ---------------- Alt Bilgi Cipleri ---------------- */
+.thermo-info {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    width: 100%;
+}
+
+.chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 5px 4px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    font-size: 10px;
+    font-weight: 700;
+    color: #cbd5e1;
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+}
+
+.chip-icon {
+    font-size: 11px;
+    line-height: 1;
+}
+
+/* ====================================================
+   MANGAL MENUSU (Slot Kontrolu & Et Secimi)
+   Termometre ile ayni dil: koyu kart, ince kenar,
+   turuncu/kirmizi vurgu. backdrop-filter YOK.
+==================================================== */
+#mangal-menu-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999998;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+}
+
+#mangal-menu-overlay.active {
+    display: flex;
+    animation: menuFadeIn 0.2s ease-out;
+}
+
+#mangal-menu-overlay.hiding {
+    animation: menuFadeOut 0.18s ease-in forwards;
+}
+
+@keyframes menuFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes menuFadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+
+.menu-card {
+    width: 420px;
+    max-height: 78vh;
+    display: flex;
+    flex-direction: column;
+    background: rgba(12, 14, 20, 0.94);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 20px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.65);
+    overflow: hidden;
+    animation: menuPopIn 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes menuPopIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---------------- Baslik ---------------- */
+/* Baslik ayni zamanda surukleme kolu */
+.menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 18px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    cursor: grab;
+}
+
+.menu-card.dragging .menu-header { cursor: grabbing; }
+
+/* Suruklenmis kart: overlay'in flex ortalamasindan cikar */
+.menu-card.positioned {
+    position: absolute;
+    margin: 0;
+}
+
+/* Surukleme sirasinda animasyon/gecis olmasin */
+.menu-card.dragging {
+    animation: none;
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.75);
+    border-color: rgba(247, 151, 30, 0.35);
+}
+
+.menu-title-wrap {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.menu-title-text { min-width: 0; }
+
+.menu-title {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    color: #f1f5f9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.menu-subtitle {
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #8b939e;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.menu-close {
+    flex: none;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #8b939e;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.menu-close:hover {
+    color: #ff6b52;
+    background: rgba(255, 65, 108, 0.18);
+    border-color: rgba(255, 65, 108, 0.45);
+}
+
+/* ---------------- Govde ---------------- */
+.menu-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.grill-action {
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 0 14px;
+    border: 1px solid rgba(247, 151, 30, 0.32);
+    border-radius: 11px;
+    color: #f5f7fa;
+    background: rgba(247, 151, 30, 0.13);
+    cursor: pointer;
+    transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+.grill-action.has-icon { gap: 8px; }
+
+.grill-action strong {
+    line-height: 1.15;
+    white-space: nowrap;
+}
+
+.grill-action-icon {
+    flex: none;
+    line-height: 1;
+}
+
+.grill-action:hover:not(:disabled) {
+    background: rgba(247, 151, 30, 0.24);
+    border-color: rgba(247, 151, 30, 0.62);
+    transform: translateY(-1px);
+}
+
+.grill-action:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.grill-action.danger {
+    border-color: rgba(255, 65, 108, 0.30);
+    background: rgba(255, 65, 108, 0.10);
+}
+
+.grill-action.danger:hover:not(:disabled) {
+    border-color: rgba(255, 65, 108, 0.62);
+    background: rgba(255, 65, 108, 0.20);
+}
+
+.menu-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    overflow-y: auto;
+}
+
+.row.is-disabled {
+    opacity: 0.42;
+    cursor: not-allowed;
+}
+
+.menu-body::-webkit-scrollbar { width: 6px; }
+.menu-body::-webkit-scrollbar-track { background: transparent; }
+.menu-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 6px;
+}
+
+/* ---------------- Satirlar ---------------- */
+.row {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    padding: 11px 13px;
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
+}
+
+.row:hover {
+    background: rgba(255, 255, 255, 0.085);
+    border-color: rgba(247, 151, 30, 0.45);
+    transform: translateX(2px);
+}
+
+.row.has-raw-item {
+    border-color: rgba(0, 176, 155, 0.70);
+}
+
+.row.has-raw-item:hover {
+    border-color: rgba(0, 176, 155, 0.95);
+}
+
+.row.is-empty:hover {
+    border-color: rgba(255, 255, 255, 0.22);
+}
+
+.row.is-disabled:hover,
+.row.is-empty.is-disabled:hover {
+    background: rgba(255, 255, 255, 0.045);
+    border-color: rgba(255, 255, 255, 0.08);
+    transform: none;
+}
+
+.row-main {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.row-index {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.row-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.row-title {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #e8edf3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.row.is-empty .row-title { color: #7d858f; }
+
+.row-sub {
+    display: block;
+    margin-top: 2px;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #7d858f;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---------------- Durum Etiketleri ---------------- */
+.pill {
+    flex: none;
+    padding: 4px 9px;
+    border-radius: 8px;
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    color: #cbd5e1;
+}
+
+.pill.raw {
+    background: rgba(0, 176, 155, 0.18);
+    border-color: rgba(0, 176, 155, 0.45);
+    color: #7fe0c4;
+}
+
+.pill.cooked {
+    background: rgba(247, 151, 30, 0.20);
+    border-color: rgba(247, 151, 30, 0.5);
+    color: #ffc44d;
+}
+
+.pill.burnt {
+    background: rgba(255, 65, 108, 0.20);
+    border-color: rgba(255, 65, 108, 0.5);
+    color: #ff6b52;
+}
+
+/* ---------------- Pisme Cubugu ---------------- */
+.row-bar {
+    position: relative;
+    width: 100%;
+    height: 6px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+.row-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #00b09b, #96c93d);
+    box-shadow: 0 0 10px rgba(0, 176, 155, 0.55);
+    transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease;
+}
+
+.row-fill.cooked {
+    background: linear-gradient(90deg, #f7971e, #ffd200);
+    box-shadow: 0 0 10px rgba(247, 151, 30, 0.6);
+}
+
+.row-fill.burnt {
+    background: linear-gradient(90deg, #ff416c, #ff4b2b);
+    box-shadow: 0 0 10px rgba(255, 65, 108, 0.65);
+}
+
+/* Yanma payi: %100'u gectikce kirmizi sagdan sola dogru ilerler.
+   Yanma esiginde cubugun tamami kirmizi olur. */
+.row-burn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 0%;
+    border-radius: 6px;
+    background: linear-gradient(270deg, #ff4b2b, rgba(255, 65, 108, 0));
+    transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------------- Alt Bar ---------------- */
+.menu-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 11px 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.menu-back {
+    font-size: 11px;
+    font-weight: 700;
+    color: #cbd5e1;
+    padding: 6px 11px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    visibility: hidden;
+}
+
+.menu-back.visible { visibility: visible; }
+
+.menu-back:hover {
+    background: rgba(247, 151, 30, 0.18);
+    border-color: rgba(247, 151, 30, 0.45);
+    color: #ffc44d;
+}
+
+.menu-hint {
+    font-size: 10px;
+    font-weight: 600;
+    color: #6d747e;
+    letter-spacing: 0.3px;
+}
+
+.menu-empty {
+    padding: 26px 10px;
+    text-align: center;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #7d858f;
+}
+
+.seasoning-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 4px 2px 12px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.seasoning-chip {
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #b7bec8;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    cursor: pointer;
+    user-select: none;
+}
+
+.seasoning-chip.active {
+    background: rgba(247, 151, 30, 0.18);
+    border-color: rgba(247, 151, 30, 0.45);
+    color: #ffc44d;
+}
+
+@keyframes burnPulse {
+    0%, 100% { border-color: rgba(255, 255, 255, 0.10); background: rgba(255, 255, 255, 0.04); }
+    50%      { border-color: rgba(231, 76, 60, 0.75);  background: rgba(231, 76, 60, 0.16); }
+}
+
+.row.burn-warning {
+    animation: burnPulse 0.9s ease-in-out infinite;
+}
+
+.row.burn-warning .row-sub {
+    color: #ff8a7a;
+    font-weight: 800;
+}
+
+.seasoning-chip.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ====================================================
+   YELPAZELEME MINIGAME (A/D bar doldurma)
+==================================================== */
+#fan-minigame-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, calc(-50% + 160px));
+    z-index: 999998;
+    display: none;
+}
+
+#fan-minigame-overlay.active {
+    display: block;
+    animation: fanFadeIn 0.2s ease-out;
+}
+
+@keyframes fanFadeIn {
+    from { opacity: 0; transform: translate(-50%, calc(-50% + 175px)); }
+    to   { opacity: 1; transform: translate(-50%, calc(-50% + 160px)); }
+}
+
+.fan-minigame-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 400px;
+    height: 140px;
+    padding: 22px 26px;
+    background: rgba(12, 14, 20, 0.86);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+}
+
+.fan-minigame-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #ffc44d;
+}
+
+.fan-key-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.fan-key {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #e8edf3;
+    font-weight: 700;
+    font-size: 16px;
+    transition: background 0.08s ease, border-color 0.08s ease, transform 0.08s ease;
+}
+
+.fan-key.pressed {
+    background: linear-gradient(180deg, #ffd200, #f7971e);
+    border-color: transparent;
+    color: #1a1206;
+    transform: scale(1.12);
+}
+
+.fan-key-arrow {
+    color: #7c8494;
+    font-size: 16px;
+}
+
+.fan-bar-track {
+    width: 100%;
+    height: 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+.fan-bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #f7971e, #ffd200);
+    transition: width 0.08s linear;
+}
+
+.fan-bar-fill.success {
+    background: linear-gradient(90deg, #2ecc71, #7bed9f);
+}
+
+.fan-bar-fill.fail {
+    background: linear-gradient(90deg, #ff416c, #ff4b2b);
+}
+
+.fan-result {
+    height: 14px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.fan-result.success { color: #7bed9f; }
+.fan-result.fail { color: #ff8a7a; }
+
+/* ====================================================
+   COZUNURLUGE OZEL OLCEKLEME
+   NOT: zoom kullanildi (CEF/Chromium destekliyor),
+   transform degil -> fixed konumlar/animasyonlar bozulmaz.
+   Baz: 1920x1080 (zoom: 1)
+==================================================== */
+@media (min-width: 2560px) and (max-width: 3839px) {
+    html {
+        zoom: 1.33;
+    }
+}
+
+@media (min-width: 3840px) {
+    html {
+        zoom: 2;
+    }
+}

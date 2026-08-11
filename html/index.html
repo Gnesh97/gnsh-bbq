@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mangal NUI HUD</title>
+    <link rel="stylesheet" href="style.css?v=2">
+</head>
+<body>
+    <div id="heat-hud-container">
+        <div class="thermo heat-normal" id="thermo">
+
+            <!-- Ust Baslik & Yuzde -->
+            <div class="thermo-head">
+                <div class="flame-badge">
+                    <span class="flame-symbol">🔥</span>
+                </div>
+                <div class="heat-value" id="heat-text">%0</div>
+            </div>
+
+            <!-- Dikey Termometre Govdesi -->
+            <div class="tube-wrap">
+                <div class="tube">
+                    <div class="tube-fill" id="heat-bar" style="height: 0%;"></div>
+                    <div class="tick" style="bottom: 80%;"></div>
+                    <div class="tick" style="bottom: 60%;"></div>
+                    <div class="tick" style="bottom: 40%;"></div>
+                    <div class="tick" style="bottom: 20%;"></div>
+                </div>
+                <div class="bulb">
+                    <div class="bulb-core"></div>
+                </div>
+            </div>
+
+            <!-- Alt Bilgi Cipi -->
+            <div class="thermo-info">
+                <div class="chip" id="speed-badge">
+                    <span class="chip-icon">⚡</span>
+                    <span id="speed-text">1.0x Normal</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ====================================================
+         MANGAL MENUSU (Slot Kontrolu & Et Secimi)
+    ==================================================== -->
+    <div id="mangal-menu-overlay">
+        <div class="menu-card" id="menu-card">
+
+            <div class="menu-header" id="menu-header" title="Sürükleyerek taşı - çift tıklayarak ortala">
+                <div class="menu-title-wrap">
+                    <div class="menu-title-text">
+                        <div class="menu-title" id="menu-title">IZGARA BÖLMELERİ</div>
+                        <div class="menu-subtitle" id="menu-subtitle">Bir bölme seç</div>
+                    </div>
+                </div>
+                <div class="menu-close" id="menu-close">✕</div>
+            </div>
+
+            <div class="menu-actions" id="menu-actions"></div>
+
+            <div class="menu-body" id="menu-body"></div>
+
+            <div class="menu-footer">
+                <div class="menu-back" id="menu-back">← Bölmelere Dön</div>
+                <div class="menu-hint">Başlıktan sürükle · ESC ile kapat</div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ====================================================
+         YELPAZELEME MINIGAME (A/D bar doldurma)
+    ==================================================== -->
+    <div id="fan-minigame-overlay">
+        <div class="fan-minigame-card">
+            <div class="fan-minigame-title">ATEŞİ YELPAZELE</div>
+            <div class="fan-key-hint">
+                <span class="fan-key" id="fan-key-a">A</span>
+                <span class="fan-key-arrow">⇄</span>
+                <span class="fan-key" id="fan-key-d">D</span>
+            </div>
+            <div class="fan-bar-track">
+                <div class="fan-bar-fill" id="fan-bar-fill" style="width: 0%;"></div>
+            </div>
+            <div class="fan-result" id="fan-result"></div>
+        </div>
+    </div>
+
+    <!-- Mangal cizirti sesi (Config.SoundEngine = 'nui') -->
+    <audio id="grill-audio" loop preload="none"></audio>
+
+    <script src="script.js?v=2"></script>
+</body>
+</html>
