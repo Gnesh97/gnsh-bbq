@@ -1,211 +1,300 @@
-# mangal_script
+# Mangal Script
 
-Gelişmiş, çok yönlü ve framework esnekliği olan bir FiveM mangal sistemidir. Bu kaynak; mangal kurma, kömür ekleme, mangalı yakma, slot bazlı et yerleştirme, pişirme takibi, yelpazeleme ile ısı yönetimi, yanma riski, duman/ses efektleri ve isteğe bağlı NUI arayüzleri sunar.
+## Immersive Grill & Cooking System for FiveM
 
-Kaynak, hem **QBCore** hem de **standalone** kullanım senaryolarını destekleyecek şekilde tasarlanmıştır. Envanter, target, bildirim ve minigame tarafı da yapılandırma üzerinden değiştirilebilir.
+Mangal Script is a polished, configurable cooking experience for FiveM roleplay
+servers. Players can place a physical grill, add fuel, light the fire, cook
+multiple recipes in parallel, manage heat with a fan minigame and take food
+through raw, undercooked, cooked or burnt outcomes.
 
-## Özellikler
+It is designed for servers that want a social, tactile food activity instead of
+a single instant-use item. The system is framework-flexible, visual, and easy
+to place into an existing QBCore or standalone economy.
 
-- Mangal kurma ve toplama komutları
-- Kömür ekleme ve mangalı tutuşturma akışı
-- Slot tabanlı ızgara sistemi
-- 10 adede kadar pişirme slotu
-- Pişirme ilerleme takibi ve yanma eşiği
-- Pişirme aşamasına göre farklı sonuç ürünleri
-- İsteğe bağlı baharat/marine sistemi
-- Isı düşüşü, ısı artırma ve yelpazeleme minigame'i
-- Mangal dumanı, pişmiş et dumanı ve yanık görünümü
-- NUI tabanlı slot menüsü ve ısı HUD'u
-- Çakışmayı önleyen mangal kullanım kilidi
-- Under-cooked tüketimde zehirlenme etkisi
+> **Current version:** <code>1.3.0</code>
+>
+> **Default profile:** QBCore + ox_inventory + qb-target
+> **Primary language:** Turkish UI and notifications, with configurable values
+> throughout <code>config.lua</code>.
 
-## Desteklenen Yapılar
+## Product highlights
 
-- Framework: `qbcore` veya `standalone`
-- Envanter: `qbcore` veya `ox_inventory`
-- Target: `qb-target`, `ox_target` veya `none`
-- Bildirim: `qbcore`, `ox_lib`, `gta` veya `none`
-- Minigame: `standalone`, `qb-skillbar` veya `ox_lib`
-- Ses motoru: `nui` veya `xsound`
+| Capability | What players experience |
+|---|---|
+| Physical grill loop | Place, fuel, ignite, cook, manage heat, collect food and remove the grill. |
+| Multi-slot cooking | Up to 10 grill slots with per-slot progress and recipe state. |
+| Heat management | Heat decay, high/low heat multipliers, burn thresholds and fan timing gameplay. |
+| Recipe outcomes | Raw, undercooked, cooked and burnt results with configurable hunger values. |
+| Social interaction | A shared world object with a server-side use lease that prevents conflicting actions. |
+| Custom presentation | NUI slot controls, heat HUD, particles, smoke, props, sound and notifications. |
+| Integration flexibility | QBCore or standalone framework, ox/qb inventory, ox/qb target and selectable notification/minigame providers. |
 
-## Gereksinimler
+## Gameplay loop
 
-Bu kaynak, seçtiğiniz config'e göre aşağıdaki bağımlılıklarla çalışabilir:
+~~~text
+/mangalkur
+    ↓
+Place the grill in the world
+    ↓
+Add coal and ignite
+    ↓
+Choose a recipe and fill grill slots
+    ↓
+Watch heat and cooking progress
+    ↓
+Fan the fire when timing matters
+    ↓
+Collect the result or risk undercooking/burning it
+    ↓
+/mangaltopla
+~~~
 
-- `qb-core`  
-  Eğer `Config.Framework = 'qbcore'` kullanıyorsanız gereklidir.
-- `ox_inventory`  
-  Eğer `Config.Inventory = 'ox_inventory'` kullanıyorsanız gereklidir.
-- `qb-target` veya `ox_target`  
-  Eğer target sistemi açık olacaksa gereklidir.
-- `ox_lib`  
-  `Config.NotifyStyle = 'ox_lib'` veya `Config.MinigameSystem = 'ox_lib'` için gereklidir.
-- `qb-skillbar`  
-  `Config.MinigameSystem = 'qb-skillbar'` için gereklidir.
-- `xsound`  
-  `Config.SoundEngine = 'xsound'` seçilirse gereklidir.
+Every step is configurable. Server validation controls grill ownership,
+distance, inventory operations, placement state, slot changes and the shared
+use lock.
 
-Not: `Config.Framework = 'standalone'` kullanıldığında bazı entegrasyonlar devre dışı kalabilir; kaynak yine de temel mantığıyla çalışacak şekilde tasarlanmıştır.
+## Feature set
 
-## Kurulum
+### Complete grill lifecycle
 
-1. Kaynağı `resources/[standalone]/mangal_script` klasörüne yerleştirin.
-2. Gerekli bağımlılıkları kurun ve çalıştırın.
-3. `server.cfg` içine kaynağı ekleyin:
+- Place one or more configured grill entities through a command or target flow.
+- Add normal coal, coal or briquette coal.
+- Ignite with a configured lighter item.
+- Display live heat and slot status through the bundled NUI.
+- Keep a grill interaction lease so two players cannot mutate the same grill at
+  the same time.
+- Remove the grill and return eligible contents to the player inventory.
+- Prevent removal while active contents still need to be collected, according
+  to the configured rules.
 
-```cfg
-ensure mangal_script
-```
+### Heat and cooking simulation
 
-4. Kaynağın, envanter/target/notify gibi bağımlılıklardan sonra başlamasına dikkat edin.
+The default heat model is intentionally easy to tune:
 
-## Yapılandırma
+| Setting | Default | Meaning |
+|---|---:|---|
+| <code>Config.DefaultHeat</code> | <code>50</code> | Starting heat after ignition. |
+| <code>Config.MinHeat</code> / <code>MaxHeat</code> | <code>0 / 100</code> | Heat bounds. |
+| <code>Config.LowHeatThreshold</code> | <code>40</code> | Below this, cooking is slower. |
+| <code>Config.HighHeatThreshold</code> | <code>80</code> | Above this, cooking is faster but risk increases. |
+| <code>Config.LowHeatMultiplier</code> | <code>0.5</code> | Low-heat cooking multiplier. |
+| <code>Config.HighHeatMultiplier</code> | <code>1.75</code> | High-heat cooking multiplier. |
+| <code>Config.BurnThreshold</code> | <code>180</code> | Burn result threshold. |
+| <code>Config.HeatDecayInterval</code> | <code>10 sec</code> | Heat decay interval. |
+| <code>Config.HeatDecayAmount</code> | <code>5</code> | Heat removed each decay period. |
 
-Ana ayarlar `config.lua` dosyasındadır.
+Players can fan the fire through the configured minigame. Success adds heat;
+failure removes heat and respects a cooldown. This creates a readable risk /
+reward loop without forcing a single difficulty profile on every server.
 
-### Temel Ayarlar
+### Recipes and outcomes
 
-- `Config.Framework`  
-  `qbcore` veya `standalone`
-- `Config.Inventory`  
-  `qbcore` veya `ox_inventory`
-- `Config.TargetSystem`  
-  `qb-target`, `ox_target` veya `none`
-- `Config.EnableNotifications`  
-  Bildirimleri aç/kapat
-- `Config.NotifyStyle`  
-  Bildirim stilini seçer
-- `Config.UseNuiMenus`  
-  Slot ve recipe seçim menülerini NUI ile gösterir
-- `Config.UseNuiHeatHud`  
-  Isı göstergesini NUI HUD olarak gösterir
+The default recipe catalog includes six products:
 
-### Komutlar
+| Recipe | Cook time | Raw item | Cooked item | Hunger |
+|---|---:|---|---|---:|
+| Izgara sucuk | 6 sec | <code>raw_sausage</code> | <code>cooked_sausage</code> | 25 |
+| Tavuk kanat | 8 sec | <code>raw_chicken</code> | <code>cooked_chicken</code> | 35 |
+| Dana biftek | 12 sec | <code>raw_meat</code> | <code>cooked_meat</code> | 50 |
+| Izgara balık | 10 sec | <code>raw_fish</code> | <code>cooked_fish</code> | 40 |
+| Mangal köfte | 10 sec | <code>raw_meatball</code> | <code>cooked_meatball</code> | 45 |
+| Közde mısır | 9 sec | <code>sweet_corn</code> | <code>grilled_corn</code> | 30 |
 
-- `Config.BuildCommand = 'mangalkur'`
-- `Config.RemoveCommand = 'mangaltopla'`
+Every recipe may also produce an undercooked result or the configured
+<code>burnt_meat</code> result. Recipe definitions are data-driven, so server
+owners can add new raw/cooked item pairs, cook times, hunger values and food
+props without rewriting the cooking engine.
 
-Varsayılan komutlar:
+### Spice and fuel
 
-```text
+- Optional seasoning modifier through <code>baharat</code>.
+- Normal coal aliases: <code>komur</code>, <code>coal</code> and
+  <code>briket_komur</code>.
+- Ignition aliases: <code>cakmak</code> and <code>lighter</code>.
+- Briquette coal uses a slower decay multiplier and an ignition bonus by
+  default.
+- Seasoning can add hunger value and a small safe-cook bonus.
+
+### UI, particles and audio
+
+- NUI slot menu for recipe selection and grill control.
+- Independent heat HUD and menu distances.
+- Fire and smoke particle effects.
+- Cooked-meat and burnt-meat smoke profiles.
+- Local sizzling sound through NUI, with optional <code>xsound</code> support.
+- QBCore, ox_lib, GTA-native or disabled notification modes.
+- Standalone, qb-skillbar or ox_lib fan minigame modes.
+
+The menu-distance fix is intentional: <code>Config.NuiMenuDistance</code> controls
+when the open grill menu closes, while <code>Config.NuiHudDistance</code> controls
+the heat HUD. A player can therefore keep the HUD behavior tight without
+prematurely closing a usable menu.
+
+## Compatibility matrix
+
+| Area | Supported values |
+|---|---|
+| Framework | <code>qbcore</code>, <code>standalone</code> |
+| Inventory | QBCore inventory bridge, <code>ox_inventory</code> |
+| Target | <code>qb-target</code>, <code>ox_target</code>, <code>none</code> |
+| Notifications | QBCore, <code>ox_lib</code>, GTA native, disabled |
+| Minigame | Standalone, <code>qb-skillbar</code>, <code>ox_lib</code> |
+| Sound | Bundled NUI sound, <code>xsound</code> |
+| UI fallback | 3D interaction text and keybind when target is disabled |
+
+The resource does not require every provider. Set the corresponding
+<code>Config.*</code> value to the provider you run, or keep the default
+configuration when the automatic bridge is appropriate.
+
+## Requirements
+
+### Minimum
+
+- FiveM server using the <code>cerulean</code> resource manifest.
+- A configured framework choice: QBCore or standalone.
+- An inventory choice when items are required.
+- The item definitions used by your recipes, fuel and ignition flow.
+
+### Optional integrations
+
+- <code>qb-core</code>
+- <code>ox_inventory</code>
+- <code>qb-target</code> or <code>ox_target</code>
+- <code>ox_lib</code>
+- <code>qb-skillbar</code>
+- <code>xsound</code>
+
+In standalone mode, the core grill flow remains available while framework-owned
+inventory or notification behavior is replaced by the configured fallback.
+
+## Installation
+
+1. Copy the resource to your server:
+
+   ~~~text
+   resources/[standalone]/mangal_script
+   ~~~
+
+2. Register the items used by your recipe, fuel and ignition configuration.
+   QBCore item definitions are available in <code>Config.QBItemDefinitions</code>;
+   adapt them to your inventory if needed.
+3. Start the optional providers before the grill resource.
+4. Add the resource to <code>server.cfg</code>:
+
+   ~~~cfg
+   ensure mangal_script
+   ~~~
+
+5. Open <code>config.lua</code> and choose the framework, inventory, target,
+   notification, minigame and sound providers.
+6. Confirm that the grill model and local audio asset exist when custom assets
+   are configured.
+7. Restart the resource and test placement, fuel, ignition, cooking, collection
+   and removal with a real player inventory.
+
+## Configuration guide
+
+### Core integration
+
+~~~lua
+Config.Framework = 'qbcore'
+Config.Inventory = 'ox_inventory'
+Config.TargetSystem = 'qb-target'
+
+Config.EnableNotifications = false
+Config.NotifyStyle = 'qbcore'
+Config.UseNuiMenus = true
+Config.UseNuiHeatHud = true
+Config.MinigameSystem = 'standalone'
+~~~
+
+### Interaction and ownership
+
+~~~lua
+Config.InteractDistance = 2.5
+Config.GrillInteractDistance = 4.0
+Config.OnlyOwnerCanRemove = false
+Config.PlacementRequestTimeout = 15000
+Config.GrillUseLeaseMs = 10000
+Config.GrillUseHeartbeatMs = 3000
+~~~
+
+The client provides a smooth interaction experience, but the server performs
+the final distance and state checks. The lease/heartbeat pair protects shared
+grill state when multiple players interact with the same object.
+
+### Visual and audio controls
+
+~~~lua
+Config.GrillModel = 'prop_bbq_5'
+Config.UseNuiMenus = true
+Config.UseNuiHeatHud = true
+Config.EnableMeatSmoke = true
+Config.EnableSound = true
+Config.SoundEngine = 'nui'
+~~~
+
+Replace the model, particle, sound and food-prop values in <code>config.lua</code>
+to match the visual identity of your server.
+
+### Commands
+
+~~~text
 /mangalkur
 /mangaltopla
-```
+~~~
 
-### Isı ve Pişirme
+Both command names are configurable through <code>Config.BuildCommand</code> and
+<code>Config.RemoveCommand</code>. Target integrations expose the same actions
+through contextual options.
 
-- `Config.DefaultHeat`  
-  Başlangıç ısısı
-- `Config.MinHeat` / `Config.MaxHeat`  
-  Isı sınırları
-- `Config.HeatDecayInterval` / `Config.HeatDecayAmount`  
-  Zamanla ısı düşüşü
-- `Config.LowHeatThreshold`, `Config.HighHeatThreshold`  
-  Isı çarpanları için eşikler
-- `Config.BurnThreshold`  
-  Yanma eşiği
-- `Config.BurnWarning`  
-  Yanma uyarısının davranışı
+## Security and state integrity
 
-### Mangal Etkileşimi
+- Grill operations are mediated by server events and validated against the
+  registered grill state.
+- Placement uses a short-lived request flow before the entity is accepted.
+- Inventory additions/removals are performed through the configured bridge.
+- Shared grill mutations are protected by an owner/use lease and heartbeat.
+- Distance, empty-slot, inventory-full, duplicate-action and invalid-entity
+  cases return controlled user feedback.
+- Cleanup handles player drop and resource stop paths.
 
-- `Config.InteractDistance`  
-  Genel etkileşim mesafesi
-- `Config.GrillInteractDistance`  
-  Sunucu tarafı kesin mesafe kontrolü
-- `Config.NuiMenuDistance`
-  Açık NUI menüsünün mangaldan uzaklaşınca kapanacağı mesafe. Isı HUD'ının
-  `Config.NuiHudDistance` ayarından bağımsızdır.
-- `Config.PlacementRequestTimeout`  
-  Mangal kurma istek süresi
-- `Config.GrillUseLeaseMs` / `Config.GrillUseHeartbeatMs`  
-  Mangal kullanım kilidi süreleri
+The system is built for gameplay reliability; administrators should still
+protect their framework, inventory and server event surfaces as part of the
+overall server security model.
 
-### Ses ve Efektler
+## Customization ideas
 
-- `Config.EnableSound`  
-  Cızırtı sesini aç/kapat
-- `Config.SoundEngine`  
-  `nui` veya `xsound`
-- `Config.SoundFile`  
-  Yerel ses dosyası veya URL
-- `Config.EnableMeatSmoke`  
-  Pişmiş et dumanını aç/kapat
+- Add recipes for restaurant menus, hunting, fishing or street-food jobs.
+- Use seasoning as a job or economy progression item.
+- Give briquette coal a premium price and longer cooking sessions.
+- Create server events around timed cookouts or food festivals.
+- Replace the bundled UI colors, particles and food props to match your brand.
+- Add your own item definitions without changing the cooking state machine.
 
-## Kullanım
+## Troubleshooting
 
-Örnek akış:
+| Symptom | Check |
+|---|---|
+| Grill does not appear | Confirm <code>Config.GrillModel</code>, model streaming and placement logs. |
+| Target options are missing | Confirm <code>Config.TargetSystem</code> and the selected target resource is running. |
+| Menu closes too early | Tune <code>Config.NuiMenuDistance</code>; it is independent from <code>Config.NuiHudDistance</code>. |
+| Notifications do not show | Check <code>Config.EnableNotifications</code> and <code>Config.NotifyStyle</code>. |
+| Food cannot be added | Confirm raw item names, inventory bridge and available recipe slots. |
+| Grill will not ignite | Confirm a configured coal item and ignition item are present. |
+| Sound is silent | Check <code>Config.SoundEngine</code>, sound file path and provider state. |
+| QBCore bridge is unavailable | Start <code>qb-core</code> before this resource and verify the configured resource name. |
 
-1. Oyuncu mangalı kurar.
-2. Mangal üzerine kömür ekler.
-3. Mangalı yakar.
-4. Çiğ malzemeyi slotlara yerleştirir.
-5. Isı durumuna göre yemek pişer.
-6. Oyuncu pişmiş ürünü slotlardan toplar.
-7. Gerekirse mangalı toplar.
+## Project documentation
 
-Mangal kullanımında tek oyunculu kilit mantığı vardır. Bir oyuncu mangalı kullanırken başka bir oyuncu aynı anda aynı mangal üzerinde işlem yapamaz.
+- [CHANGELOG.md](CHANGELOG.md) — release notes and current changes
+- [docs/RELEASE_CHECKLIST.md](docs/RELEASE_CHECKLIST.md) — release gate
+- [docs/STAGING_TEST_MATRIX.md](docs/STAGING_TEST_MATRIX.md) — staging scenarios
+- [docs/ROLLBACK.md](docs/ROLLBACK.md) — rollback procedure
+- [docs/DEPLOYMENT_BACKUP.md](docs/DEPLOYMENT_BACKUP.md) — backup guidance
 
-## Pişirme Tarifleri
+## Ownership
 
-`Config.Recipes` içinde tanımlı tarifler, çiğ ürünleri pişmiş veya yarı pişmiş çıktılara dönüştürür.
-
-| Tarif | Çiğ Ürün | Sonuç | Açıklama |
-|---|---|---|---|
-| Sucuk | `raw_sausage` | `cooked_sausage` | Izgara sucuk |
-| Tavuk | `raw_chicken` | `cooked_chicken` | Tavuk kanat |
-| Dana | `raw_meat` | `cooked_meat` | Dana biftek |
-| Balık | `raw_fish` | `cooked_fish` | Izgara balık |
-| Köfte | `raw_meatball` | `cooked_meatball` | Mangal köfte |
-| Mısır | `sweet_corn` | `grilled_corn` | Közde mısır |
-
-Not: Yetersiz pişirme durumunda bazı ürünler `undercooked_*` formuna dönüşebilir, aşırı pişirme durumunda ise `burnt_meat` oluşur.
-
-## Ek Envanter Öğeleri
-
-`config.lua` içinde tanımlı örnek özel itemler:
-
-- `raw_meatball`
-- `cooked_meatball`
-- `sweet_corn`
-- `grilled_corn`
-- `briket_komur`
-- `baharat`
-
-İsterseniz kendi envanter sisteminize göre bu itemleri çoğaltabilir veya mevcut item adlarını değiştirebilirsiniz. QBCore kullanılıyorsa, `Config.QBItemDefinitions` içindeki tanımlar başlangıçta canlı item tablosuna eklenir.
-
-## Kömür ve Tutuşturma
-
-Kömür ve ateşleme tarafı item bazlı çalışır:
-
-- Kömür itemleri: `komur`, `coal`, `briket_komur`
-- Tutuşturma itemleri: `cakmak`, `lighter`
-
-`briket_komur`, normal kömüre göre daha yavaş tükenir ve daha hızlı ısınma avantajı sağlayabilir.
-
-## Baharat Sistemi
-
-Baharat, ete isteğe bağlı eklenen bir modifier olarak kullanılır.
-
-- Örnek item: `baharat`
-- Etkisi: açlık değeri üzerinde bonus ve güvenli pişirme sınırında küçük bir esneklik
-
-## Bildirimler ve Hata Mesajları
-
-Kaynak; mangal dolu, mangal kullanımda, malzeme eksik, envanter dolu, yanmış ürün gibi durumlar için Türkçe bildirimler içerir. Bildirim stilini `Config.NotifyStyle` ile değiştirebilirsiniz.
-
-## Sorun Giderme
-
-- Mangal hiç görünmüyorsa `Config.GrillModel` için kullanılan modelin açık olduğundan emin olun.
-- Target menüsü çalışmıyorsa `Config.TargetSystem` ve ilgili resource durumunu kontrol edin.
-- Bildirim gelmiyorsa `Config.EnableNotifications` ve `Config.NotifyStyle` ayarlarını kontrol edin.
-- Ses çalmıyorsa `Config.SoundEngine` ve ses dosyasının yolunu kontrol edin.
-- QBCore kullanırken `qb-core` başlamadan bu kaynak yüklenirse bridge bağlantısı hazır olmayabilir; start sırasını düzeltin.
-
-## Lisans ve Sahiplik
-
-Bu kaynak `author = 'Gnesh'` olarak tanımlanmıştır. Repo'ya eklerken kendi sunucunuzun ihtiyaçlarına göre yapılandırabilirsiniz.
-
----
-
-İyi oyunlar.
+The resource is authored by Gnesh. Review the repository license and the
+license terms of any third-party models, sounds, fonts or images before
+commercial deployment.
