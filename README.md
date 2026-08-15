@@ -113,6 +113,9 @@ Varsayılan komutlar:
   Genel etkileşim mesafesi
 - `Config.GrillInteractDistance`  
   Sunucu tarafı kesin mesafe kontrolü
+- `Config.NuiMenuDistance`
+  Açık NUI menüsünün mangaldan uzaklaşınca kapanacağı mesafe. Isı HUD'ının
+  `Config.NuiHudDistance` ayarından bağımsızdır.
 - `Config.PlacementRequestTimeout`  
   Mangal kurma istek süresi
 - `Config.GrillUseLeaseMs` / `Config.GrillUseHeartbeatMs`  

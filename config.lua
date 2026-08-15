@@ -28,6 +28,10 @@ Config.UseNuiHeatHud = true
 -- NUI Termometrenin ekranda belirdigi mesafe (metre) (1.3 altında çalışmıyor)
 Config.NuiHudDistance = 1.3
 
+-- NUI menusu acikken kullanilacak mesafe. HUD mesafesinden bagimsiz tutulur;
+-- yokusta mangal ile oyuncu arasindaki yukseklik farki menuyu kapatmamali.
+Config.NuiMenuDistance = 4.0
+
 -- Mangal kullanim kilidi (tek oyuncu)
 Config.GrillUseLeaseMs = 10000
 Config.GrillUseHeartbeatMs = 3000

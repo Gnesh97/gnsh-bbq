@@ -1147,12 +1147,17 @@ RefreshNuiSlotMenu = function(netIdNum)
     })
 end
 
--- ALT ile acilan NUI, sicaklik HUD'i ile ayni mesafeden cikinca kapanir.
+-- Acik NUI menusu HUD'in gorunurluk mesafesine bagli olmamali.
+-- Ozellikle yokusta, HUD icin uygun olan kisa mesafe oyuncu-mangal arasindaki
+-- 3D mesafeyi asabilir ve menunun hemen kapanmasina neden olabilir.
 CreateThread(function()
     while true do
         Wait(250)
 
-        local menuDistance = Config.NuiHudDistance or 2.0
+        local menuDistance = Config.NuiMenuDistance
+            or Config.GrillInteractDistance
+            or Config.InteractDistance
+            or 2.5
         if isNuiMenuOpen and nuiMenuNetId then
             local inRange = false
 
