@@ -1147,12 +1147,17 @@ RefreshNuiSlotMenu = function(netIdNum)
     })
 end
 
--- ALT ile acilan NUI, sicaklik HUD'i ile ayni mesafeden cikinca kapanir.
+-- Acik NUI menusu HUD'in gorunurluk mesafesine bagli olmamali.
+-- Ozellikle yokusta, HUD icin uygun olan kisa mesafe oyuncu-mangal arasindaki
+-- 3D mesafeyi asabilir ve menunun hemen kapanmasina neden olabilir.
 CreateThread(function()
     while true do
         Wait(250)
 
-        local menuDistance = Config.NuiHudDistance or 2.0
+        local menuDistance = Config.NuiMenuDistance
+            or Config.GrillInteractDistance
+            or Config.InteractDistance
+            or 2.5
         if isNuiMenuOpen and nuiMenuNetId then
             local inRange = false
 
@@ -1824,6 +1829,11 @@ AddEventHandler('mangal:client:startFanning', function(netId)
         FacePedToGrill(grillObj)
     end
 
+    -- Fan prop/anim asset'leri yuklenirken ped serbest kalmamali.
+    -- Aksi halde ilk Wait() araliginda oyuncu hareket eder ve pose
+    -- yeniden baslatilinca eski konumuna geri cekilir.
+    FreezeEntityPosition(ped, true)
+
     local fanProp = nil
     local propModel = Config.FanPropModel or `prop_anim_newspaper`
     if EnsureModelLoaded(propModel) then
@@ -1855,6 +1865,9 @@ AddEventHandler('mangal:client:startFanning', function(netId)
 
     TriggerServerEvent('mangal:server:finishFanning', netId, isSuccess)
     ResumeNuiGrillPose(netId)
+    if not nuiGrillPoseActive then
+        FreezeEntityPosition(ped, false)
+    end
 end)
 
 -- ----------------------------------------------------
