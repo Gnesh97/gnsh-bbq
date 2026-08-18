@@ -3,7 +3,17 @@ game 'gta5'
 
 author 'Gnesh'
 description 'QB-Core & Standalone Uyumlu Mangal Scripti'
-version '1.3.0'
+version '1.0.0'
+
+-- Varsayilan production profili: qb-core + ox_inventory + ox_target.
+-- ox_inventory kendi manifestinde ox_lib'e bagimli olsa da burada da
+-- eksik/yanlis baslatma sirasini erken yakalamak icin acikca belirtilir.
+dependencies {
+    'qb-core',
+    'ox_lib',
+    'ox_inventory',
+    'ox_target'
+}
 
 ui_page 'html/index.html'
 

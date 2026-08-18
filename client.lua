@@ -2052,7 +2052,7 @@ AddEventHandler('mangal:client:getPoisoned', function(settings)
     local nauseaMs = math.max(0, (tonumber(settings and settings.nauseaDuration) or Config.PoisonSettings.NauseaDuration or 2) * 1000)
     local ped = PlayerPedId()
 
-    ShowNotification(Config.Lang['food_nausea'], 'error', true)
+    ShowNotification(Config.Lang['food_nausea'], 'error')
 
     CreateThread(function()
         if nauseaMs > 0 then
@@ -2068,7 +2068,7 @@ AddEventHandler('mangal:client:getPoisoned', function(settings)
         end
 
         if not isPoisoned then return end
-        ShowNotification(Config.Lang['food_poisoned'], 'error', true)
+        ShowNotification(Config.Lang['food_poisoned'], 'error')
 
         ped = PlayerPedId()
         if DoesEntityExist(ped) and not IsEntityDead(ped) then

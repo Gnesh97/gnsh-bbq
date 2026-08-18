@@ -9,12 +9,12 @@ Config.Framework = 'qbcore'
 -- gibi kombinasyonlar desteklenir.
 Config.Inventory = 'ox_inventory'
 
--- Bildirim Ayarlari (Bildirimleri kapatmak icin false yapabilirsiniz)
+-- Bildirim Ayarlari (normal bildirimler bilerek kapali; durum NUI/menulerden takip edilir)
 Config.EnableNotifications = false
 Config.NotifyStyle = 'qbcore' -- Options: 'qbcore', 'ox_lib', 'gta', 'none'
 
 -- Target Sistemi ('qb-target', 'ox_target' veya 'none')
-Config.TargetSystem = 'qb-target'
+Config.TargetSystem = 'ox_target'
 
 -- 3D Yazi Metinlerini Gosterme (Target menusu kullandiginiz icin varsayilan: false)
 Config.Enable3DText = false
@@ -95,9 +95,8 @@ Config.SlotOffsets = {
     [10] = { pos = vector3( 0.43, -0.15, 0.93), rot = vector3(0.0, 0.0, 0.0) }
 }
 
--- Pisme ve Yanma Ayarlari (%100 pisme, %180 ve uzeri yanik et)
+-- Pisme ve Yanma Ayarlari (%100 pisme, %180 ve uzeri yanik slot)
 Config.BurnThreshold = 180
-Config.BurntItem = 'burnt_meat'
 
 -- Yanma uyarisi: cookProgress bu yuzdeyi gecince slot menusunde
 -- kirmizi titresim + kisa bip. BurnThreshold'dan kucuk olmali.
@@ -122,8 +121,8 @@ Config.PoisonSettings = {
     Duration = 20,
     ApplyScreenEffect = true,
     TickInterval = 5,
-    OnsetDelay = 3, -- yemek yendikten sonra mide bulanmasi baslayana kadar gecen sure (saniye) -- TEST: kisa, sonra ayarlanacak
-    NauseaDuration = 2 -- mide bulanmasi ile kusma animasyonu arasindaki sure (saniye) -- TEST: kisa, sonra ayarlanacak
+    OnsetDelay = 5, -- yemek yendikten sonra mide bulantısının başlama gecikmesi (saniye)
+    NauseaDuration = 4 -- mide bulantısı ile kusma animasyonu arasındaki süre (saniye)
 }
 
 -- HUD metinleri ve sunucu pisme hizi ayni esikleri kullanir.
@@ -297,7 +296,6 @@ Config.Recipes = {
         rawItem = 'raw_sausage',
         undercookedItem = 'undercooked_sausage',
         cookedItem = 'cooked_sausage',
-        burntItem = 'burnt_meat',
         hungerAmount = 25,
         foodProp = `prop_cs_steak`
     },
@@ -308,7 +306,6 @@ Config.Recipes = {
         rawItem = 'raw_chicken',
         undercookedItem = 'undercooked_chicken',
         cookedItem = 'cooked_chicken',
-        burntItem = 'burnt_meat',
         hungerAmount = 35,
         foodProp = `prop_turkey_leg_01`
     },
@@ -319,7 +316,6 @@ Config.Recipes = {
         rawItem = 'raw_meat',
         undercookedItem = 'undercooked_meat',
         cookedItem = 'cooked_meat',
-        burntItem = 'burnt_meat',
         hungerAmount = 50,
         foodProp = `prop_cs_steak`
     },
@@ -330,7 +326,6 @@ Config.Recipes = {
         rawItem = 'raw_fish',
         undercookedItem = 'undercooked_fish',
         cookedItem = 'cooked_fish',
-        burntItem = 'burnt_meat',
         hungerAmount = 40,
         foodProp = `prop_fish_slice_01`
     },
@@ -341,7 +336,6 @@ Config.Recipes = {
         rawItem = 'raw_meatball',
         undercookedItem = 'undercooked_meatball',
         cookedItem = 'cooked_meatball',
-        burntItem = 'burnt_meat',
         hungerAmount = 45,
         foodProp = `prop_cs_burger_01`
     },
@@ -352,7 +346,6 @@ Config.Recipes = {
         rawItem = 'sweet_corn',
         undercookedItem = 'undercooked_corn',
         cookedItem = 'grilled_corn',
-        burntItem = 'burnt_meat',
         hungerAmount = 30,
         foodProp = `prop_cs_hotdog_01`
     }

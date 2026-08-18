@@ -7,7 +7,7 @@
 QBCore ve seçilebilir envanter/target/minigame adaptörleriyle çalışan, NUI destekli
 mangal etkileşimi.
 
-**Sürüm:** `1.3.0` · **Varsayılan framework:** `qbcore` · **Varsayılan envanter:** `ox_inventory`
+**Sürüm:** `1.0.0` · **Varsayılan framework:** `qbcore` · **Varsayılan envanter:** `ox_inventory`
 
 [Kurulum](#kurulum) · [Yapılandırma](#yapılandırma) · [Tarifler](#tarifler) · [Operasyon](#operasyon-ve-sürüm)
 
@@ -57,7 +57,7 @@ resource’un sunucuda çalışıyor olması gerekir.
 |---|---|---|
 | Framework | `qbcore`, `standalone` | `qbcore` |
 | Envanter | `qbcore`, `ox_inventory` | `ox_inventory` |
-| Target | `qb-target`, `ox_target`, `none` | `qb-target` |
+| Target | `qb-target`, `ox_target`, `none` | `ox_target` |
 | Bildirim | `qbcore`, `ox_lib`, `gta`, `none` | `qbcore` |
 | Yelpazeleme | `standalone`, `qb-skillbar`, `ox_lib` | `standalone` |
 | Ses | `nui`, `xsound` | `nui` |
@@ -77,7 +77,7 @@ seçtiğiniz kombinasyonu staging ortamında doğrulayın.
 | `ox_inventory` | `Config.Inventory = 'ox_inventory'` olduğunda; mevcut varsayılanda gereklidir. |
 | `qb-target` | `Config.TargetSystem = 'qb-target'` olduğunda. |
 | `ox_target` | `Config.TargetSystem = 'ox_target'` olduğunda. |
-| `ox_lib` | `NotifyStyle`, `MinigameSystem` veya fallback menü için seçildiğinde. |
+| `ox_lib` | `ox_inventory` kullanıldığında veya `NotifyStyle`, `MinigameSystem` ya da fallback menü için seçildiğinde. |
 | `qb-skillbar` | `Config.MinigameSystem = 'qb-skillbar'` olduğunda. |
 | `qb-menu` | `Config.UseNuiMenus = false` ve QB menüsü fallback’i kullanılacaksa. |
 | `xsound` | `Config.SoundEngine = 'xsound'` olduğunda. |
@@ -109,6 +109,13 @@ Varsayılan akış için envanterinizde aşağıdaki item adları karşılıklan
 Item adları `Config.Recipes`, `Config.CoalItems`, `Config.IgnitionItems` ve
 `Config.Seasonings` ile birebir eşleşmelidir.
 
+Bu repository’nin varsayılan production profili için `fxmanifest.lua` içinde
+`qb-core`, `ox_lib`, `ox_inventory` ve `ox_target` dependency’leri deklarasyon olarak
+bulunur. `Config.Framework`, `Config.Inventory` veya `Config.TargetSystem` değerlerini
+alternatif bir profile çevirirseniz manifestteki dependency listesini de aynı profile
+göre güncellemeniz gerekir; FiveM manifesti config değerlerine göre koşullu dependency
+tanımlayamaz.
+
 ## Kurulum
 
 1. Kaynağı `resources/[standalone]/gnsh-bbq` klasörüne yerleştirin. Klasör adını
@@ -119,18 +126,20 @@ Item adları `Config.Recipes`, `Config.CoalItems`, `Config.IgnitionItems` ve
 3. Yukarıdaki item’leri inventory sisteminizde tanımlayın. Özellikle `mangal`, seçilen
    kömür/tutuşturucu item’leri ve aktif tariflerin tüm çıktı item’leri mevcut olmalıdır.
 4. `config.lua` içindeki entegrasyon ve oyun ayarlarını sunucunuza göre düzenleyin.
-5. Bağımlılıkları önce, `gnsh-bbq` kaynağını sonra başlatın. Mevcut varsayılanlar için
+5. Bağımlılıkları önce, `gnsh-bbq` kaynağını sonra başlatın. Manifest dependency’leri
+   varsayılan profil için bu sırayı zorunlu tutar. Mevcut varsayılanlar için
    örnek sıra:
 
    ```cfg
    ensure qb-core
+   ensure ox_lib
    ensure ox_inventory
-   ensure qb-target
+   ensure ox_target
    ensure gnsh-bbq
    ```
 
-   Sunucunuzun mevcut dependency sırasını koruyun; bu örnek kaynak manifestinde
-   otomatik dependency tanımı olmadığı için açık bir başlangıç sırası gösterir.
+   Sunucunuzun mevcut dependency sırasını koruyun ve tüm item tanımlarının yüklenmiş
+   olduğundan emin olun.
 6. Kaynak başlatıldıktan sonra staging ortamında temel akışları doğrulayın ve üretim dağıtımından önce kendi sunucu release sürecinizi tamamlayın.
 
 ## Yapılandırma
@@ -144,7 +153,8 @@ varsayılanları gösterir.
 |---|---:|---|
 | `Config.Framework` | `qbcore` | `qbcore` veya `standalone`. |
 | `Config.Inventory` | `ox_inventory` | `qbcore` veya `ox_inventory`; framework’ten bağımsız seçilir. |
-| `Config.TargetSystem` | `qb-target` | `qb-target`, `ox_target` veya `none`. |
+| `Config.TargetSystem` | `ox_target` | `qb-target`, `ox_target` veya `none`. |
+| `Config.EnableNotifications` | `false` | Script bildirimlerini kapalı tutar; normal bildirimler varsayılan olarak gösterilmez. |
 | `Config.Enable3DText` | `false` | Target kullanılmadığında fallback 3D metin akışını açar. |
 | `Config.InteractDistance` | `2.5` | Genel client etkileşim mesafesi. |
 | `Config.GrillInteractDistance` | `4.0` | Sunucunun kesin entity mesafesi doğrulaması. |
@@ -190,6 +200,12 @@ Yelpazeleme için `Config.FanHeatGain = 20`, `Config.FanHeatLossOnFail = 5` ve
 `Config.FanCooldown = 5000` ms kullanılır. Başarılı yelpazeleme ısıyı artırır,
 başarısız sonuç azaltır.
 
+Zehirlenme ayarlarında varsayılan olarak `OnsetDelay = 5` saniye,
+`NauseaDuration = 4` saniye, `Duration = 20` saniye ve `TickInterval = 5` saniyedir.
+`Config.EnableNotifications = false` olduğu için zehirlenme bildirimleri de dahil olmak
+üzere script bildirimleri oyuncuya gösterilmez; ekran efekti ve animasyon davranışı
+ayrıca devam eder.
+
 ### Pişirme sonucu davranışı
 
 `cookTime`, normal `1.0x` ısı çarpanında yüzde 100 pişmeye ulaşmak için kullanılan
@@ -201,6 +217,9 @@ yaklaşık olarak değişebilir.
 - `cookProgress >= 100`: `cookedItem` verilir.
 - `cookProgress >= BurnThreshold`: slot `BURNT` olur ve toplama sırasında yanmış içerik
   envantere verilmez; yanmış içerik atılır.
+
+Yanmış slotlar için ayrı bir inventory item’i üretilmez; `BURNT` durumundaki içerik
+toplandığında doğrudan silinir.
 
 Az pişmiş ve çiğ ürünler kullanıldığında `Config.UndercookedPoisonChance` ve
 `Config.RawPoisonChance` değerleri uygulanır. Baharat, `safeCookBonus` kadar risk azaltır
@@ -265,7 +284,6 @@ gerekir. Örnek:
     rawItem = 'raw_shrimp',
     undercookedItem = 'undercooked_shrimp',
     cookedItem = 'cooked_shrimp',
-    burntItem = 'burnt_meat',
     hungerAmount = 35,
     foodProp = `prop_cs_steak`
 }
@@ -368,13 +386,13 @@ oluşturabilirsiniz. Kaynakta ayrı bir locale loader bulunmuyor.
 | Tarif menüsünde ürün yok | Çiğ item’in envanterde bulunduğunu, `Config.Recipes` kaydını ve item adlarının birebir eşleştiğini kontrol edin. |
 | Pişmiş item alınamıyor | Mangalın `LIT` state’inde olduğunu ve ilgili cooked/undercooked item’lerinin inventory’de tanımlı olduğunu kontrol edin. |
 | Ses duyulmuyor | `Config.EnableSound`, `Config.SoundEngine`, `Config.SoundFile` ve `html/sizzling.ogg` dosyasını kontrol edin. `xsound` seçildiyse resource çalışıyor olmalıdır. |
-| Bildirim görünmüyor | `Config.EnableNotifications`, `Config.NotifyStyle` ve seçilen bildirim resource’unu kontrol edin. |
+| Bildirim görünmüyor | `Config.EnableNotifications = false` ise bu beklenen davranıştır; açmak için `Config.EnableNotifications` ve `Config.NotifyStyle` değerlerini kontrol edin. |
 | QBCore bağlantısı hazır değil | `qb-core` başlamadan kaynağı başlatmayın. QBCore restart sonrası bağlantı kurulamazsa kaynağı yeniden başlatın. |
 | Restart sonrası eski mangal/slot bekleniyor | Kaynak kalıcılık sağlamaz; restart sonrası geçici entity ve state’in geri yüklenmesi desteklenmiyor. |
 
 ## Operasyon ve sürüm
 
-- Mevcut resource sürümü `fxmanifest.lua` içinde `1.3.0` olarak tanımlıdır.
+- Mevcut resource sürümü `fxmanifest.lua` içinde `1.0.0` olarak tanımlıdır.
 - Değişiklik geçmişi [`CHANGELOG.md`](CHANGELOG.md) içinde tutulur.
 - Geliştirme ve release akışı [`CONTRIBUTING.md`](CONTRIBUTING.md) içindedir.
 - Staging ve üretim öncesi doğrulama, sunucu yöneticisinin kendi dağıtım süreci içinde yapılmalıdır.

@@ -544,8 +544,15 @@ local function RegisterUsableItems()
     if UsableItemsRegistered then return true end
     if Config.Framework == 'qbcore' and not Bridge.IsFrameworkReady() then return false end
 
+    local function RegisterUseableItem(itemName, callback)
+        local registered = Bridge.CreateUseableItem(itemName, callback)
+        if registered ~= true then
+            error(('Kullanilabilir item kaydi basarisiz: %s'):format(tostring(itemName)))
+        end
+    end
+
     local success, reason = pcall(function()
-        Bridge.CreateUseableItem('mangal', function(source)
+        RegisterUseableItem('mangal', function(source)
             BeginGrillPlacement(source)
         end)
 
@@ -555,7 +562,7 @@ local function RegisterUsableItems()
             local function RegisterFoodUse(itemName)
                 Bridge.MarkItemUseable(itemName)
 
-                Bridge.CreateUseableItem(itemName, function(source, usedItem)
+                RegisterUseableItem(itemName, function(source, usedItem)
                     local src = source
                     local inventoryItem = usedItem
                     if type(inventoryItem) ~= 'table' then
