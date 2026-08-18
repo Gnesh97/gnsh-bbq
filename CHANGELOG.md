@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Switched the resource to the MIT License and removed Asset Escrow-specific packaging metadata.
+
 ## 1.0.0 - 2026-08-18
 
 - Added the production branch and CI validation workflow.
