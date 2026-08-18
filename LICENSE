@@ -1,0 +1,65 @@
+GNsh BBQ PROPRIETARY LICENSE
+============================
+
+Copyright (c) 2026 Gnesh. All rights reserved.
+
+This resource and its source code, configuration schema, user interface,
+documentation, media, and related files (collectively, the "Resource") are
+owned by Gnesh. The Resource is not open source.
+
+1. Limited permission
+
+Subject to this license, Gnesh grants the licensee a limited, non-exclusive,
+non-transferable, revocable permission to install and run the Resource on a
+FiveM server operated by or for the licensee.
+
+2. Configuration exception
+
+The licensee may edit `config.lua` only for server-specific configuration,
+including integration settings, item names, recipes, cooking times, distances,
+and other values exposed through the `Config` table. These edits do not grant
+ownership of the Resource or permission to modify its code.
+
+Private operational backups of the unmodified Resource are permitted for the
+licensee's own server administration.
+
+3. Restrictions
+
+Except for the permissions expressly granted above, the licensee may not:
+
+- modify, translate, adapt, or create derivative works from the Resource;
+- modify files other than `config.lua`, including `client.lua`, `server.lua`,
+  bridge files, `fxmanifest.lua`, HTML, JavaScript, CSS, and media files;
+- copy, publish, share, sell, rent, lease, sublicense, or redistribute the
+  Resource or any part of it;
+- bundle the Resource with another product or offer it through a marketplace;
+- remove copyright, ownership, or license notices; or
+- claim authorship or ownership of the Resource or a modified version of it.
+
+4. Ownership
+
+No ownership, copyright, trademark, or other intellectual-property right is
+transferred by this license. All rights not expressly granted remain with
+Gnesh.
+
+5. Third-party components
+
+FiveM, framework, inventory, target, minigame, audio, and other third-party
+components remain subject to their respective licenses. This license grants no
+rights to those components.
+
+6. Termination
+
+This permission terminates automatically if the licensee violates this license.
+Upon termination, the licensee must stop using and delete all copies of the
+Resource, except where retention is required by applicable law.
+
+7. Disclaimer
+
+The Resource is provided "AS IS", without warranties of any kind, to the
+maximum extent permitted by applicable law. Gnesh is not liable for damages
+arising from use, inability to use, modification, or deployment of the
+Resource, to the maximum extent permitted by applicable law.
+
+For permission requests or commercial licensing questions, contact the
+copyright owner, Gnesh.

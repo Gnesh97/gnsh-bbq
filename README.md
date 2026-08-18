@@ -388,16 +388,15 @@ bulunmuyor.
 
 ## Lisans ve sahiplik
 
-Bu repository içinde `LICENSE` dosyası bulunmuyor ve kaynak kodu için açık kaynak lisansı
-verilmiş değildir.
+Bu kaynak açık kaynak değildir. Kullanım koşulları [`LICENSE`](LICENSE) dosyasında
+belirtilen özel/proprietary lisans ile düzenlenir.
 
 Bu scriptin ve kaynak kodunun tek sahibi **Gnesh**’tir. Yazılı izin olmadan kopyalanamaz,
-yeniden dağıtılamaz, satılamaz veya kaynak kodu değiştirilemez. Sunucuya özel `config.lua`
-değişiklikleri sahiplik devri anlamına gelmez.
+yeni bir ürün olarak dağıtılamaz, satılamaz veya kaynak kodu değiştirilemez. Lisanslı
+kullanıcılar yalnızca kendi sunucularına özel `config.lua` ayarlarını değiştirebilir.
+Bu değişiklikler sahiplik devri anlamına gelmez.
 
-Bu README’deki sahiplik bildirimi resmi bir lisans sözleşmesinin yerini tutmaz; dağıtım
-koşullarının hukuken netleştirilmesi için ayrıca bir `LICENSE` veya ticari sözleşme
-eklenmesi önerilir.
+Detaylı izin ve kısıtlar için [`LICENSE`](LICENSE) dosyasına bakın.
 
 ## Maintainer
 
