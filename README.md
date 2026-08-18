@@ -385,19 +385,3 @@ oluşturabilirsiniz. Kaynakta ayrı bir locale loader bulunmuyor.
 
 README’de roadmap bölümü eklenmedi; repository’de doğrulanmış bir gelecek özellik listesi
 bulunmuyor.
-
-## Lisans ve sahiplik
-
-Bu kaynak açık kaynak değildir. Kullanım koşulları [`LICENSE`](LICENSE) dosyasında
-belirtilen özel/proprietary lisans ile düzenlenir.
-
-Bu scriptin ve kaynak kodunun tek sahibi **Gnesh**’tir. Yazılı izin olmadan kopyalanamaz,
-yeni bir ürün olarak dağıtılamaz, satılamaz veya kaynak kodu değiştirilemez. Lisanslı
-kullanıcılar yalnızca kendi sunucularına özel `config.lua` ayarlarını değiştirebilir.
-Bu değişiklikler sahiplik devri anlamına gelmez.
-
-Detaylı izin ve kısıtlar için [`LICENSE`](LICENSE) dosyasına bakın.
-
-## Maintainer
-
-**Gnesh** — script sahibi ve maintainer.
