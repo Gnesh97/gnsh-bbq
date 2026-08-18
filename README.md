@@ -142,6 +142,14 @@ tanımlayamaz.
    olduğundan emin olun.
 6. Kaynak başlatıldıktan sonra staging ortamında temel akışları doğrulayın ve üretim dağıtımından önce kendi sunucu release sürecinizi tamamlayın.
 
+### Asset Escrow hazırlığı
+
+`fxmanifest.lua` içindeki `escrow_ignore` tanımı `config.lua` ve `html/**` dosyalarını
+erişilebilir bırakır. Böylece sunucu sahipleri ayarları değiştirebilir ve NUI çalışmaya
+devam eder; client/server/bridge Lua dosyaları Cfx.re Asset Escrow ile korunabilir.
+Escrow paketi oluştururken kaynağı ZIP olarak Cfx.re Portal’a yükleyin ve şifrelenmiş
+çıktıyı temiz bir test sunucusunda doğrulayın.
+
 ## Yapılandırma
 
 Ana ayar dosyası [`config.lua`](config.lua)’dır. Aşağıdaki değerler depodaki mevcut

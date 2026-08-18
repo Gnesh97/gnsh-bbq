@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Added Cfx.re Asset Escrow ignore rules for editable configuration and NUI files.
+
 ## 1.0.0 - 2026-08-18
 
 - Added the production branch and CI validation workflow.

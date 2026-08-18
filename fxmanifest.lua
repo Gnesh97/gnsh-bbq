@@ -15,6 +15,14 @@ dependencies {
     'ox_target'
 }
 
+-- Cfx.re Asset Escrow: sunucu sahiplerinin ayarlayabildigi config ve NUI
+-- dosyalari acik kalir; client/server/bridge Lua dosyalari escrow'lanabilir.
+-- NUI escrow tarafinda desteklenmedigi icin html klasoru bilerek disarida.
+escrow_ignore {
+    'config.lua',
+    'html/**'
+}
+
 ui_page 'html/index.html'
 
 files {
