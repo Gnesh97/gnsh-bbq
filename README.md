@@ -131,9 +131,7 @@ Item adları `Config.Recipes`, `Config.CoalItems`, `Config.IgnitionItems` ve
 
    Sunucunuzun mevcut dependency sırasını koruyun; bu örnek kaynak manifestinde
    otomatik dependency tanımı olmadığı için açık bir başlangıç sırası gösterir.
-6. Kaynak başlatıldıktan sonra [staging test matrisini](docs/STAGING_TEST_MATRIX.md)
-   uygulayın; ardından üretim dağıtımı için [release checklist](docs/RELEASE_CHECKLIST.md)
-   adımlarını izleyin.
+6. Kaynak başlatıldıktan sonra staging ortamında temel akışları doğrulayın ve üretim dağıtımından önce kendi sunucu release sürecinizi tamamlayın.
 
 ## Yapılandırma
 
@@ -351,12 +349,7 @@ gnsh-bbq/
 │   └── sizzling.ogg
 ├── .github/workflows/validate.yml
 ├── CHANGELOG.md
-├── CONTRIBUTING.md
-└── docs/
-    ├── DEPLOYMENT_BACKUP.md
-    ├── RELEASE_CHECKLIST.md
-    ├── ROLLBACK.md
-    └── STAGING_TEST_MATRIX.md
+└── CONTRIBUTING.md
 ```
 
 ## Yerelleştirme
@@ -384,10 +377,7 @@ oluşturabilirsiniz. Kaynakta ayrı bir locale loader bulunmuyor.
 - Mevcut resource sürümü `fxmanifest.lua` içinde `1.3.0` olarak tanımlıdır.
 - Değişiklik geçmişi [`CHANGELOG.md`](CHANGELOG.md) içinde tutulur.
 - Geliştirme ve release akışı [`CONTRIBUTING.md`](CONTRIBUTING.md) içindedir.
-- Staging senaryoları [`docs/STAGING_TEST_MATRIX.md`](docs/STAGING_TEST_MATRIX.md) içindedir.
-- Üretim öncesi kontrol için [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md),
-  yedekleme için [`docs/DEPLOYMENT_BACKUP.md`](docs/DEPLOYMENT_BACKUP.md), geri dönüş için
-  [`docs/ROLLBACK.md`](docs/ROLLBACK.md) kullanılmalıdır.
+- Staging ve üretim öncesi doğrulama, sunucu yöneticisinin kendi dağıtım süreci içinde yapılmalıdır.
 - CI workflow’ı Lua syntax, manifest varlığı ve yüksek güvenli credential pattern’leri
   için kontrol yapar: [`.github/workflows/validate.yml`](.github/workflows/validate.yml).
 - `main` production, `dev` entegrasyon branch’i olarak dokümante edilmiştir. Üretim
