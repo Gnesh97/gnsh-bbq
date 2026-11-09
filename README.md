@@ -2,133 +2,109 @@
 
 <div align="center">
 
-### FiveM için sunucu doğrulamalı, slot tabanlı mangal ve pişirme sistemi
+[![Validate FiveM resource](https://github.com/Gnesh97/gnsh-bbq/actions/workflows/validate.yml/badge.svg)](https://github.com/Gnesh97/gnsh-bbq/actions/workflows/validate.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-QBCore ve seçilebilir envanter/target/minigame adaptörleriyle çalışan, NUI destekli
-mangal etkileşimi.
+### Server-authoritative, slot-based BBQ and grilling system for FiveM
 
-**Sürüm:** `1.0.0` · **Lisans:** [MIT](LICENSE) · **Varsayılan framework:** `qbcore` · **Varsayılan envanter:** `ox_inventory`
+NUI-powered grilling interaction for QBCore and standalone servers with selectable inventory, target, and minigame adapters.
 
-[Kurulum](#kurulum) · [Yapılandırma](#yapılandırma) · [Tarifler](#tarifler) · [Operasyon](#operasyon-ve-sürüm)
+**Version:** `1.0.0` · **License:** [MIT](LICENSE) · **Default framework:** `qbcore` · **Default inventory:** `ox_inventory`
+
+[Installation](#installation) · [Configuration](#configuration) · [Recipes](#recipes) · [Operations](#operations-and-versioning)
 
 </div>
 
 ---
 
-## Genel bakış
+## Overview
 
-`gnsh-bbq`, oyuncunun mangal kurmasından ürünü envanterine almasına kadar olan akışı
-yönetir:
+`gnsh-bbq` manages the full grilling lifecycle from placing a barbecue stand to collecting cooked items into the player's inventory:
 
-1. Mangal kurulur ve sunucu tarafından kayıt altına alınır.
-2. Kömür eklenir ve mangal yakılır.
-3. Çiğ malzemeler ızgaradaki slotlara yerleştirilir.
-4. Isı seviyesine göre pişirme ilerler; düşük/yüksek ısı pişirme hızını değiştirir.
-5. Oyuncu ısıyı yelpazeleme minigame’iyle yönetir.
-6. Çıktı, pişme durumuna göre çiğ, az pişmiş veya pişmiş ürün olarak alınır.
+1. A grill is placed in the world and registered on the server.
+2. Coal is added and the grill is lit.
+3. Raw ingredients are placed into available grill slots.
+4. Cooking progresses based on current heat; low and high heat modify cooking speed.
+5. Players regulate heat using the fanning minigame.
+6. Outputs are collected as raw, undercooked, or cooked items depending on cooking progress.
 
-Grill durumu, ısı, slotlar, kullanım kilitleri ve geçici aksiyonlar çalışma sırasında
-sunucu belleğinde tutulur. Kaynak yeniden başlatıldığında bu geçici durumlar kalıcı
-olarak saklanmaz; kaynak kapanırken aktif mangal entity’leri temizlenir. Projede SQL
-veya veritabanı migration dosyası yoktur.
+Grill state, heat, slots, interaction leases, and transient actions are held in server memory during runtime. State does not persist across resource restarts, and active grill entities are cleaned up when the resource stops. There are no SQL schemas or database migrations.
 
-## Özellikler
+## Features
 
-- Mangal kurma ve toplama komutları ile `mangal` usable item akışı.
-- Kömür ekleme, tutuşturma, ısı düşüşü ve ısı sınırları.
-- `Config.MaxSlots` ile yapılandırılabilen slot sistemi; mevcut varsayılan kapasite 10.
-- Tarif bazlı pişirme; çiğ, az pişmiş, pişmiş ve yanmış slot durumları.
-- Opsiyonel baharat modifier’ı: açlık bonusu ve zehirlenme riskinde azalma.
-- Standalone A/D yelpazeleme minigame’i; alternatif olarak `qb-skillbar` veya `ox_lib`.
-- NUI slot/tarif menüsü ve mangal ısı HUD’ı.
-- `qb-target`, `ox_target` veya 3D yazı fallback’i.
-- NUI ses motoru veya isteğe bağlı `xsound` entegrasyonu.
-- Sunucu tarafı entity, model, mesafe, envanter, durum, cooldown ve kullanım kilidi
-  doğrulamaları.
-- Oyuncu kopması, kilit süresinin dolması ve resource stop durumları için geçici durum
-  temizliği.
+- Grill placement/pickup commands and `mangal` usable-item workflow.
+- Coal fueling, ignition, periodic heat decay, and min/max heat clamping.
+- Configurable grill slot capacity via `Config.MaxSlots` (default: `10`).
+- Recipe-driven cooking with raw, undercooked, cooked, and burnt slot states.
+- Optional seasoning modifier (`safeCookBonus` poison-risk reduction and `hungerBonus`).
+- Standalone A/D fanning minigame, with optional `qb-skillbar` or `ox_lib` adapters.
+- NUI slot/recipe menu and real-time grill heat HUD.
+- `qb-target`, `ox_target`, or 3D text fallback interaction.
+- Bundled NUI sound engine (`html/sizzling.ogg`) or optional `xsound` integration.
+- Server-side validation for entity/model, distance, inventory items, state, cooldowns, and single-user leases.
+- Automatic cleanup on player disconnect, lease expiration, and resource stop.
 
-## Desteklenen entegrasyonlar
+## Supported Integrations
 
-Config değerleri kaynakta mevcut adaptör yollarını belirler. Seçilen değer için ilgili
-resource’un sunucuda çalışıyor olması gerekir.
+Adapter options in [`config.lua`](config.lua) select which runtime integrations are used. The chosen resource must be running on the server.
 
-| Alan | Desteklenen değerler | Depodaki varsayılan |
+| Layer | Supported values | Repository default |
 |---|---|---|
 | Framework | `qbcore`, `standalone` | `qbcore` |
-| Envanter | `qbcore`, `ox_inventory` | `ox_inventory` |
+| Inventory | `qbcore`, `ox_inventory` | `ox_inventory` |
 | Target | `qb-target`, `ox_target`, `none` | `ox_target` |
-| Bildirim | `qbcore`, `ox_lib`, `gta`, `none` | `qbcore` |
-| Yelpazeleme | `standalone`, `qb-skillbar`, `ox_lib` | `standalone` |
-| Ses | `nui`, `xsound` | `nui` |
-| Menü | NUI veya `qb-menu`/`ox_lib` fallback’i | NUI |
+| Notifications | `qbcore`, `ox_lib`, `gta`, `none` | `qbcore` |
+| Minigame | `standalone`, `qb-skillbar`, `ox_lib` | `standalone` |
+| Sound | `nui`, `xsound` | `nui` |
+| Menu | NUI or `qb-menu` / `ox_lib` fallback | NUI |
 
-`standalone` seçimi temel kaynak akışını framework çağrılarından ayırır; ancak envanter
-ve kullanılabilir item davranışı seçilen inventory adapter’ına bağlıdır. Üretim sunucusunda
-seçtiğiniz kombinasyonu staging ortamında doğrulayın.
+`standalone` decouples the core workflow from framework calls, though inventory and usable-item behavior still depend on the configured inventory adapter. Validate your chosen combination in staging before deploying to production.
 
-## Gereksinimler
+## Requirements
 
-### Kaynak bağımlılıkları
+### Resource Dependencies
 
-| Resource | Ne zaman gerekir? |
+| Resource | When required |
 |---|---|
-| `qb-core` | `Config.Framework = 'qbcore'` olduğunda; mevcut varsayılanda gereklidir. |
-| `ox_inventory` | `Config.Inventory = 'ox_inventory'` olduğunda; mevcut varsayılanda gereklidir. |
-| `qb-target` | `Config.TargetSystem = 'qb-target'` olduğunda. |
-| `ox_target` | `Config.TargetSystem = 'ox_target'` olduğunda. |
-| `ox_lib` | `ox_inventory` kullanıldığında veya `NotifyStyle`, `MinigameSystem` ya da fallback menü için seçildiğinde. |
-| `qb-skillbar` | `Config.MinigameSystem = 'qb-skillbar'` olduğunda. |
-| `qb-menu` | `Config.UseNuiMenus = false` ve QB menüsü fallback’i kullanılacaksa. |
-| `xsound` | `Config.SoundEngine = 'xsound'` olduğunda. |
+| `qb-core` | When `Config.Framework = 'qbcore'` (enabled in the default profile). |
+| `ox_inventory` | When `Config.Inventory = 'ox_inventory'` (enabled in the default profile). |
+| `qb-target` | When `Config.TargetSystem = 'qb-target'`. |
+| `ox_target` | When `Config.TargetSystem = 'ox_target'`. |
+| `ox_lib` | Required by `ox_inventory` or when selected for notifications, minigame, or fallback menus. |
+| `qb-skillbar` | When `Config.MinigameSystem = 'qb-skillbar'`. |
+| `qb-menu` | When `Config.UseNuiMenus = false` and using the QB menu fallback. |
+| `xsound` | When `Config.SoundEngine = 'xsound'`. |
 
-Kaynakta SQL dosyası bulunmadığı için ayrıca SQL import adımı yoktur. NUI HTML, CSS,
-JavaScript ve `sizzling.ogg` dosyası kaynakla birlikte gelir; harici web arayüzü kurulumu
-gerekmez.
+Because the resource uses no database tables, no SQL import is needed. All NUI assets (HTML, CSS, JS, and `html/sizzling.ogg`) are bundled inside the resource.
 
-### Envanter item’leri
+### Inventory Items
 
-Varsayılan akış için envanterinizde aşağıdaki item adları karşılıklandırılmalıdır:
+Register the following items in your inventory system for the default setup:
 
-| Amaç | Item’ler |
+| Purpose | Items |
 |---|---|
-| Mangal kurma/toplama | `mangal` |
-| Kömür | `komur`, `coal`, `briket_komur` |
-| Tutuşturma | `cakmak`, `lighter` |
-| Sucuk | `raw_sausage`, `undercooked_sausage`, `cooked_sausage` |
-| Tavuk | `raw_chicken`, `undercooked_chicken`, `cooked_chicken` |
-| Dana | `raw_meat`, `undercooked_meat`, `cooked_meat` |
-| Balık | `raw_fish`, `undercooked_fish`, `cooked_fish` |
-| Köfte | `raw_meatball`, `undercooked_meatball`, `cooked_meatball` |
-| Mısır | `sweet_corn`, `undercooked_corn`, `grilled_corn` |
-| Opsiyonel baharat | `baharat` |
+| Grill item | `mangal` |
+| Coal | `komur`, `coal`, `briket_komur` |
+| Ignition | `cakmak`, `lighter` |
+| Sausage | `raw_sausage`, `undercooked_sausage`, `cooked_sausage` |
+| Chicken | `raw_chicken`, `undercooked_chicken`, `cooked_chicken` |
+| Beef | `raw_meat`, `undercooked_meat`, `cooked_meat` |
+| Fish | `raw_fish`, `undercooked_fish`, `cooked_fish` |
+| Meatball | `raw_meatball`, `undercooked_meatball`, `cooked_meatball` |
+| Corn | `sweet_corn`, `undercooked_corn`, `grilled_corn` |
+| Optional seasoning | `baharat` |
 
-`Config.Inventory = 'qbcore'` ve `Config.Framework = 'qbcore'` kullanıldığında kaynak,
-`Config.QBItemDefinitions` içindeki eksik QBCore item’lerini başlangıçta kaydetmeyi dener.
-`ox_inventory` item’leri ise inventory’nin kendi statik item tanımlarında bulunmalıdır.
-Item adları `Config.Recipes`, `Config.CoalItems`, `Config.IgnitionItems` ve
-`Config.Seasonings` ile birebir eşleşmelidir.
+When using `Config.Inventory = 'qbcore'` alongside `Config.Framework = 'qbcore'`, the resource attempts to register missing QBCore items from `Config.QBItemDefinitions` on startup. For `ox_inventory`, items must be defined in `ox_inventory`'s item definitions and match `Config.Recipes`, `Config.CoalItems`, `Config.IgnitionItems`, and `Config.Seasonings`.
 
-Bu repository’nin varsayılan production profili için `fxmanifest.lua` içinde
-`qb-core`, `ox_lib`, `ox_inventory` ve `ox_target` dependency’leri deklarasyon olarak
-bulunur. `Config.Framework`, `Config.Inventory` veya `Config.TargetSystem` değerlerini
-alternatif bir profile çevirirseniz manifestteki dependency listesini de aynı profile
-göre güncellemeniz gerekir; FiveM manifesti config değerlerine göre koşullu dependency
-tanımlayamaz.
+> Note: [`fxmanifest.lua`](fxmanifest.lua) declares `qb-core`, `ox_lib`, `ox_inventory`, and `ox_target` as dependencies for the default production profile. If you switch to a different profile, update the manifest dependencies accordingly.
 
-## Kurulum
+## Installation
 
-1. Kaynağı `resources/[standalone]/gnsh-bbq` klasörüne yerleştirin. Klasör adını
-   değiştirirseniz `server.cfg` içindeki `ensure` satırını da aynı resource adıyla
-   güncelleyin.
-2. Seçtiğiniz framework, inventory, target ve diğer adapter resource’larını kurup
-   başlatın.
-3. Yukarıdaki item’leri inventory sisteminizde tanımlayın. Özellikle `mangal`, seçilen
-   kömür/tutuşturucu item’leri ve aktif tariflerin tüm çıktı item’leri mevcut olmalıdır.
-4. `config.lua` içindeki entegrasyon ve oyun ayarlarını sunucunuza göre düzenleyin.
-5. Bağımlılıkları önce, `gnsh-bbq` kaynağını sonra başlatın. Manifest dependency’leri
-   varsayılan profil için bu sırayı zorunlu tutar. Mevcut varsayılanlar için
-   örnek sıra:
+1. Copy the resource into `resources/[standalone]/gnsh-bbq`. If you rename the folder, update the `ensure` line in `server.cfg` to match.
+2. Install and start your selected framework, inventory, target, and adapter resources.
+3. Register all required items (`mangal`, coal/lighter items, and recipe input/output items) in your inventory system.
+4. Review and adjust [`config.lua`](config.lua) for your server.
+5. Start dependencies before `gnsh-bbq` in `server.cfg`:
 
    ```cfg
    ensure qb-core
@@ -138,143 +114,96 @@ tanımlayamaz.
    ensure gnsh-bbq
    ```
 
-   Sunucunuzun mevcut dependency sırasını koruyun ve tüm item tanımlarının yüklenmiş
-   olduğundan emin olun.
-6. Kaynak başlatıldıktan sonra staging ortamında temel akışları doğrulayın ve üretim dağıtımından önce kendi sunucu release sürecinizi tamamlayın.
+6. Verify the full flow in a staging environment before going live.
 
-## Yapılandırma
+## Configuration
 
-Ana ayar dosyası [`config.lua`](config.lua)’dır. Aşağıdaki değerler depodaki mevcut
-varsayılanları gösterir.
+All settings live in [`config.lua`](config.lua). Repository defaults are summarized below.
 
-### Framework, inventory ve etkileşim
+### Framework, Inventory & Interaction
 
-| Ayar | Varsayılan | Açıklama |
+| Setting | Default | Description |
 |---|---:|---|
-| `Config.Framework` | `qbcore` | `qbcore` veya `standalone`. |
-| `Config.Inventory` | `ox_inventory` | `qbcore` veya `ox_inventory`; framework’ten bağımsız seçilir. |
-| `Config.TargetSystem` | `ox_target` | `qb-target`, `ox_target` veya `none`. |
-| `Config.EnableNotifications` | `false` | Script bildirimlerini kapalı tutar; normal bildirimler varsayılan olarak gösterilmez. |
-| `Config.Enable3DText` | `false` | Target kullanılmadığında fallback 3D metin akışını açar. |
-| `Config.InteractDistance` | `2.5` | Genel client etkileşim mesafesi. |
-| `Config.GrillInteractDistance` | `4.0` | Sunucunun kesin entity mesafesi doğrulaması. |
-| `Config.OnlyOwnerCanRemove` | `false` | `true` yapılırsa yalnızca kuran oyuncu toplar. |
-| `Config.UseNuiMenus` | `true` | Slot ve tarif menülerinde NUI kullanır. |
-| `Config.UseNuiHeatHud` | `true` | Isı HUD’ını açar. |
-| `Config.NuiHudDistance` | `1.3` | Isı HUD’ının görünürlük mesafesi. |
-| `Config.NuiMenuDistance` | `4.0` | Açık NUI menüsünün mangaldan uzaklaşınca kapanacağı mesafe. HUD’dan bağımsızdır. |
+| `Config.Framework` | `qbcore` | `qbcore` or `standalone`. |
+| `Config.Inventory` | `ox_inventory` | `qbcore` or `ox_inventory` (independent of framework). |
+| `Config.TargetSystem` | `ox_target` | `qb-target`, `ox_target`, or `none`. |
+| `Config.EnableNotifications` | `false` | Suppresses script notifications by default. |
+| `Config.Enable3DText` | `false` | Enables fallback 3D text interaction when no target resource is used. |
+| `Config.InteractDistance` | `2.5` | Client-side interaction distance. |
+| `Config.GrillInteractDistance` | `4.0` | Server-authoritative entity distance check. |
+| `Config.OnlyOwnerCanRemove` | `false` | Restricts grill pickup to the player who placed it when `true`. |
+| `Config.UseNuiMenus` | `true` | Uses NUI for slot and recipe menus. |
+| `Config.UseNuiHeatHud` | `true` | Enables the heat HUD overlay. |
+| `Config.NuiHudDistance` | `1.3` | Visibility radius for the heat HUD. |
+| `Config.NuiMenuDistance` | `4.0` | Auto-close radius for open NUI menus (kept separate from `NuiHudDistance` for sloped terrain). |
 
-`NuiMenuDistance` ile `NuiHudDistance` özellikle ayrı tutulur. Eğimi veya yükselti
-farkı olan yerlerde açık menünün erken kapanmasını istemiyorsanız menü mesafesini
-HUD mesafesinden bağımsız artırın.
+### Commands & Timings
 
-### Komutlar ve süreler
-
-| Ayar | Varsayılan | Açıklama |
+| Setting | Default | Description |
 |---|---:|---|
-| `Config.BuildCommand` | `mangalkur` | `/mangalkur` ile kurulum isteği gönderir. |
-| `Config.RemoveCommand` | `mangaltopla` | `/mangaltopla` ile yakındaki mangalı toplama isteği gönderir. |
-| `Config.AddCoalTime` | `3000` ms | Kömür ekleme animasyonu/aksiyonu. |
-| `Config.LightGrillTime` | `5000` ms | Mangal yakma animasyonu/aksiyonu. |
-| `Config.PlacementRequestTimeout` | `15000` ms | Kurulum handshake isteğinin geçerlilik süresi. |
-| `Config.GrillUseLeaseMs` | `10000` ms | Tek oyunculu kullanım kilidinin süresi. |
-| `Config.GrillUseHeartbeatMs` | `3000` ms | Client kullanım kilidini yenileme aralığı. |
+| `Config.BuildCommand` | `mangalkur` | Command (`/mangalkur`) to request grill placement. |
+| `Config.RemoveCommand` | `mangaltopla` | Command (`/mangaltopla`) to pack up a nearby grill. |
+| `Config.AddCoalTime` | `3000` ms | Duration for adding coal. |
+| `Config.LightGrillTime` | `5000` ms | Duration for lighting the grill. |
+| `Config.PlacementRequestTimeout` | `15000` ms | Handshake timeout for grill placement requests. |
+| `Config.GrillUseLeaseMs` | `10000` ms | Single-player interaction lock duration. |
+| `Config.GrillUseHeartbeatMs` | `3000` ms | Client lease-renewal interval. |
 
-### Isı ve pişirme
+### Heat & Cooking
 
-| Ayar | Varsayılan | Açıklama |
+| Setting | Default | Description |
 |---|---:|---|
-| `Config.DefaultHeat` | `50` | Mangal yakıldığında başlangıç ısısı. |
-| `Config.MinHeat` / `Config.MaxHeat` | `0` / `100` | Isı sınırları. |
-| `Config.HeatDecayInterval` | `10` sn | Isı düşüş periyodu. |
-| `Config.HeatDecayAmount` | `5` | Her periyotta düşen ısı. |
-| `Config.LowHeatThreshold` | `40` | Altında `LowHeatMultiplier` kullanılır. |
-| `Config.HighHeatThreshold` | `80` | Üstünde `HighHeatMultiplier` kullanılır. |
-| `Config.LowHeatMultiplier` | `0.5` | Düşük ısı pişirme çarpanı. |
-| `Config.NormalHeatMultiplier` | `1.0` | Normal ısı pişirme çarpanı. |
-| `Config.HighHeatMultiplier` | `1.75` | Yüksek ısı pişirme çarpanı. |
-| `Config.BurnThreshold` | `180` | Pişirme ilerlemesi bu değere ulaştığında slot yanmış sayılır. |
-| `Config.CookingTickMs` | `1000` ms | Sunucu pişirme döngüsünün tick aralığı. |
+| `Config.DefaultHeat` | `50` | Initial heat when lit. |
+| `Config.MinHeat` / `Config.MaxHeat` | `0` / `100` | Heat bounds. |
+| `Config.HeatDecayInterval` | `10` s | Interval between heat decay ticks. |
+| `Config.HeatDecayAmount` | `5` | Heat lost per decay interval. |
+| `Config.LowHeatThreshold` | `40` | Threshold below which `LowHeatMultiplier` applies. |
+| `Config.HighHeatThreshold` | `80` | Threshold above which `HighHeatMultiplier` applies. |
+| `Config.LowHeatMultiplier` | `0.5` | Cooking speed multiplier at low heat. |
+| `Config.NormalHeatMultiplier` | `1.0` | Cooking speed multiplier at normal heat. |
+| `Config.HighHeatMultiplier` | `1.75` | Cooking speed multiplier at high heat. |
+| `Config.BurnThreshold` | `180` | Progress threshold at which the slot burns. |
+| `Config.CookingTickMs` | `1000` ms | Server cooking simulation tick interval. |
 
-Yelpazeleme için `Config.FanHeatGain = 20`, `Config.FanHeatLossOnFail = 5` ve
-`Config.FanCooldown = 5000` ms kullanılır. Başarılı yelpazeleme ısıyı artırır,
-başarısız sonuç azaltır.
+Fanning defaults: `Config.FanHeatGain = 20`, `Config.FanHeatLossOnFail = 5`, and `Config.FanCooldown = 5000` ms.
 
-Zehirlenme ayarlarında varsayılan olarak `OnsetDelay = 5` saniye,
-`NauseaDuration = 4` saniye, `Duration = 20` saniye ve `TickInterval = 5` saniyedir.
-`Config.EnableNotifications = false` olduğu için zehirlenme bildirimleri de dahil olmak
-üzere script bildirimleri oyuncuya gösterilmez; ekran efekti ve animasyon davranışı
-ayrıca devam eder.
+Food-poisoning defaults: `OnsetDelay = 5` s, `NauseaDuration = 4` s, `Duration = 20` s, and `TickInterval = 5` s. Poisoning chances (`Config.UndercookedPoisonChance`, `Config.RawPoisonChance`) and `Config.Seasonings` (`safeCookBonus`, `hungerBonus`) adjust outcome safety and QBCore hunger metadata.
 
-### Pişirme sonucu davranışı
+### Cooking Outcomes
 
-`cookTime`, normal `1.0x` ısı çarpanında yüzde 100 pişmeye ulaşmak için kullanılan
-temel süredir ve saniye cinsindendir. Gerçek süre, mangalın ısı seviyesi değiştiği için
-yaklaşık olarak değişebilir.
+`cookTime` defines the base duration in seconds at a `1.0x` heat multiplier to reach `100%` cooking progress:
 
-- `cookProgress = 0`: çiğ item verilir.
-- `0 < cookProgress < 100`: `undercookedItem` verilir.
-- `cookProgress >= 100`: `cookedItem` verilir.
-- `cookProgress >= BurnThreshold`: slot `BURNT` olur ve toplama sırasında yanmış içerik
-  envantere verilmez; yanmış içerik atılır.
+- `cookProgress = 0`: returns the raw item.
+- `0 < cookProgress < 100`: returns `undercookedItem`.
+- `cookProgress >= 100`: returns `cookedItem`.
+- `cookProgress >= BurnThreshold`: slot transitions to `BURNT` and burnt contents are discarded when collected (no burnt item is granted).
 
-Yanmış slotlar için ayrı bir inventory item’i üretilmez; `BURNT` durumundaki içerik
-toplandığında doğrudan silinir.
+## Usage
 
-Az pişmiş ve çiğ ürünler kullanıldığında `Config.UndercookedPoisonChance` ve
-`Config.RawPoisonChance` değerleri uygulanır. Baharat, `safeCookBonus` kadar risk azaltır
-ve `hungerBonus` kadar açlık değerine ekler. Bu zehirlenme akışı varsayılan olarak QBCore
-metadata hunger değerini günceller.
+1. With `mangal` in inventory, use the item or run `/mangalkur` to place the grill.
+2. Add coal using the first available item from `Config.CoalItems`.
+3. Light the grill with an item from `Config.IgnitionItems`.
+4. Add raw ingredients via the target menu or NUI slot/recipe menu (`Config.UseNuiMenus`).
+5. Optionally apply a seasoning item from `Config.Seasonings` (such as `baharat`).
+6. Fan the grill to manage heat — in the standalone minigame, alternate pressing `A` and `D` within `Config.FanBarTimeLimit` (`6000` ms; `FanBarFillPerPress = 9`, `FanBarDecayPerSecond = 7`).
+7. Collect cooked food from the slot menu. Packing up the grill refunds non-burnt slot contents and returns the `mangal` item.
 
-## Kullanım
+## Recipes
 
-1. Oyuncu üzerinde `mangal` item’i varken `/mangalkur` komutunu kullanır veya inventory
-   usable item akışını çalıştırır.
-2. Mangal üzerine kömür ekleyin. `Config.CoalItems` listesindeki ilk mevcut item kullanılır.
-3. `Config.IgnitionItems` listesindeki bir item ile mangalı yakın.
-4. Mangal yanarken target menüsünden et ekleyin veya `Config.UseNuiMenus` aktifse NUI
-   slot/tarif menüsünü kullanın.
-5. İsterseniz `baharat` gibi `Config.Seasonings` içinde tanımlı bir item’i ete ekleyin.
-6. Isıyı takip edin; standalone minigame’de A/D tuşlarına sırayla basarak barı doldurun.
-   Minigame sırasında hareket kontrolleri devre dışıdır ve asset yükleme aralığında ped
-   sabit tutulur.
-7. Pişen ürünü slot menüsünden alın. Mangal toplandığında yanmamış slot içerikleri ve
-   mangal item’i envantere iade edilir; yanmış slotlar iade edilmez.
+Configured in `Config.Recipes` inside [`config.lua`](config.lua):
 
-Target sistemi `none` ise `Config.Enable3DText = true` yaparak fallback etkileşimini
-açabilirsiniz. `Config.UseNuiMenus = false` durumunda kaynak, mevcut resource durumuna
-göre `qb-menu` veya `ox_lib` menülerine geçer.
-
-## Yelpazeleme minigame’i
-
-Varsayılan `standalone` minigame ayarları:
-
-| Ayar | Varsayılan | Açıklama |
-|---|---:|---|
-| `Config.FanBarTimeLimit` | `6000` ms | Barı tamamlamak için toplam süre. |
-| `Config.FanBarFillPerPress` | `9` | Doğru sıradaki basış başına ilerleme yüzdesi. |
-| `Config.FanBarDecayPerSecond` | `7` | Basış yapılmadığında saniyelik azalma. |
-
-İlk basış A veya D olabilir; sonraki basışlar sırayla değişmelidir. Alternatif minigame
-seçenekleri `qb-skillbar` ve `ox_lib` olup ilgili resource’un çalışıyor olması gerekir.
-
-## Tarifler
-
-Tarifler `Config.Recipes` içinde tutulur. Mevcut tarifler:
-
-| ID | Tarif | `cookTime` | Çiğ item | Az pişmiş item | Pişmiş item | Açlık |
+| ID | Label | `cookTime` | Raw item | Undercooked item | Cooked item | Hunger |
 |---|---|---:|---|---|---|---:|
-| `sucuk` | Izgara Sucuk | 6 sn | `raw_sausage` | `undercooked_sausage` | `cooked_sausage` | 25 |
-| `tavuk` | Tavuk Kanat | 8 sn | `raw_chicken` | `undercooked_chicken` | `cooked_chicken` | 35 |
-| `et` | Dana Biftek | 12 sn | `raw_meat` | `undercooked_meat` | `cooked_meat` | 50 |
-| `balik` | Izgara Balık | 10 sn | `raw_fish` | `undercooked_fish` | `cooked_fish` | 40 |
-| `kofte` | Mangal Köfte | 10 sn | `raw_meatball` | `undercooked_meatball` | `cooked_meatball` | 45 |
-| `misir` | Közde Mısır | 9 sn | `sweet_corn` | `undercooked_corn` | `grilled_corn` | 30 |
+| `sucuk` | Izgara Sucuk | 6 s | `raw_sausage` | `undercooked_sausage` | `cooked_sausage` | 25 |
+| `tavuk` | Tavuk Kanat | 8 s | `raw_chicken` | `undercooked_chicken` | `cooked_chicken` | 35 |
+| `et` | Dana Biftek | 12 s | `raw_meat` | `undercooked_meat` | `cooked_meat` | 50 |
+| `balik` | Izgara Balık | 10 s | `raw_fish` | `undercooked_fish` | `cooked_fish` | 40 |
+| `kofte` | Mangal Köfte | 10 s | `raw_meatball` | `undercooked_meatball` | `cooked_meatball` | 45 |
+| `misir` | Közde Mısır | 9 s | `sweet_corn` | `undercooked_corn` | `grilled_corn` | 30 |
 
-### Yeni tarif ekleme
+### Adding a Custom Recipe
 
-Yeni bir item eklemek için tarif kaydı ile inventory tanımlarının birlikte hazırlanması
-gerekir. Örnek:
+Add a recipe entry to `Config.Recipes` and define the matching raw, undercooked, and cooked items in your inventory system:
 
 ```lua
 {
@@ -289,14 +218,7 @@ gerekir. Örnek:
 }
 ```
 
-Ardından `raw_shrimp`, `undercooked_shrimp` ve `cooked_shrimp` item’lerini inventory
-sisteminizde tanımlayın. QBCore inventory branch’i eksik tarif item’leri için varsayılan
-tanım üretmeyi dener; `ox_inventory` için tanımlar `ox_inventory` item dosyasında
-oluşturulmalıdır.
-
-## Mimari ve entegrasyon sınırları
-
-İstek akışı kısaca şöyledir:
+## Architecture & Security Boundaries
 
 ```text
 Target / NUI / command
@@ -310,47 +232,19 @@ In-memory grill state update
 Client state synchronization and visual feedback
 ```
 
-| Dosya | Sorumluluk |
+| File | Responsibility |
 |---|---|
-| `fxmanifest.lua` | FiveM manifest, version, NUI dosyaları ve script yükleme sırası. |
-| `config.lua` | Framework, inventory, tarif, ısı, item, NUI ve efekt ayarları. |
-| `client.lua` | Entity yerleştirme, target/NUI akışı, animasyon, efekt ve client state. |
-| `server.lua` | Grill state, slotlar, pişirme döngüsü, item işlemleri, kilitler ve doğrulamalar. |
-| `bridge.lua` | Server framework ve inventory soyutlaması. |
-| `bridge_client.lua` | Client bildirim, progressbar ve minigame soyutlaması. |
-| `html/` | Slot menüsü, ısı HUD’ı, fan minigame arayüzü ve ses dosyası. |
+| `fxmanifest.lua` | FiveM manifest, version, NUI files, and script load order |
+| `config.lua` | Framework, inventory, recipe, heat, item, NUI, and effect configuration |
+| `client.lua` | Entity placement, target/NUI flow, animations, effects, and client state |
+| `server.lua` | Grill state, slots, cooking tick loop, item grants/removals, leases, and checks |
+| `bridge.lua` | Server-side framework and inventory adapter abstraction |
+| `bridge_client.lua` | Client-side notify, progress bar, and minigame abstraction |
+| `html/` | NUI slot menu, heat HUD, fanning minigame, and `sizzling.ogg` |
 
-Kaynakta public resource export tanımı bulunmuyor. `Bridge.*`, `ClientBridge.*` ve
-`mangal:*` network event’leri iç implementasyon yüzeyidir; başka script’lerin doğrudan
-entegrasyon API’si olarak kullanılmamalıdır. Entegrasyon için config, usable item,
-komutlar ve target akışı kullanılmalıdır.
+Note that `Bridge.*`, `ClientBridge.*`, and `mangal:*` network events are internal implementation surfaces rather than public exports.
 
-## Sunucu doğrulama ve güvenlik sınırları
-
-Kaynak, kritik işlem öncesinde sunucu tarafında aşağıdaki kontrolleri yapar:
-
-- net ID’nin kayıtlı ve geçerli bir entity’ye ait olması,
-- entity tipinin obje olması ve izin verilen mangal modellerinden birini kullanması,
-- oyuncunun mangala `Config.GrillInteractDistance` içinde olması,
-- mangal state’inin istenen işlemle uyumlu olması,
-- çiğ malzeme, kömür, tutuşturucu ve opsiyonel baharat item’lerinin mevcut olması,
-- işlem süresi, event cooldown’ı, slot busy durumu ve tek oyunculu kullanım lease’i,
-- `Config.OnlyOwnerCanRemove` aktifse kuran oyuncu kimliği.
-
-Bu kontroller güvenlik garantisi veya exploit’lere karşı mutlak koruma iddiası değildir.
-Kaynakta özel bir `SECURITY.md` veya ayrı bir vulnerability reporting kanalı bulunmadığı
-için üretim sunucusunun kendi raporlama sürecini ayrıca tanımlaması gerekir.
-
-## Performans ve kalıcılık
-
-Pişirme ve ısı döngüleri yalnızca aktif çalışma durumundaki mangallar için çalışır;
-client tarafında target/NUI/HUD kontrolleri mesafe ve ayarlarla sınırlandırılır. Depoda
-benchmark sonucu bulunmadığından sayısal performans iddiası yapılmamaktadır.
-
-Grill state’i veritabanına yazılmaz. Resource restart, server restart veya kaynak stop
-sonrasında önceki slot/ısı ilerlemesinin geri yüklenmesi beklenmemelidir.
-
-## Proje yapısı
+## Project Structure
 
 ```text
 gnsh-bbq/
@@ -367,39 +261,34 @@ gnsh-bbq/
 │   └── sizzling.ogg
 ├── .github/workflows/validate.yml
 ├── CHANGELOG.md
-└── CONTRIBUTING.md
+├── CONTRIBUTING.md
+└── LICENSE
 ```
 
-## Yerelleştirme
+## Localization
 
-Oyuncuya gösterilen metinler `Config.Lang` içinde Türkçe olarak tutulur. Farklı bir dil
-eklemek için bu tabloyu düzenleyebilir veya aynı anahtarları koruyan bir çeviri tablosu
-oluşturabilirsiniz. Kaynakta ayrı bir locale loader bulunmuyor.
+Player-facing strings live in `Config.Lang` inside [`config.lua`](config.lua) (Turkish by default) and can be translated directly by editing those keys.
 
-## Sorun giderme
+## Troubleshooting
 
-| Belirti | Kontrol |
+| Symptom | Check |
 |---|---|
-| Mangal kurulmamış veya hemen reddedilmiş | `mangal` item’ini, oyuncu mesafesini, model tanımını ve dependency sırasını kontrol edin. |
-| Target seçenekleri görünmüyor | `Config.TargetSystem`, ilgili target resource’un state’i ve `Config.InteractDistance` değerini kontrol edin. Fallback için `Config.Enable3DText = true` kullanın. |
-| NUI menüsü erken kapanıyor | `Config.NuiMenuDistance` menü için, `Config.NuiHudDistance` yalnızca HUD için kullanılır. |
-| Tarif menüsünde ürün yok | Çiğ item’in envanterde bulunduğunu, `Config.Recipes` kaydını ve item adlarının birebir eşleştiğini kontrol edin. |
-| Pişmiş item alınamıyor | Mangalın `LIT` state’inde olduğunu ve ilgili cooked/undercooked item’lerinin inventory’de tanımlı olduğunu kontrol edin. |
-| Ses duyulmuyor | `Config.EnableSound`, `Config.SoundEngine`, `Config.SoundFile` ve `html/sizzling.ogg` dosyasını kontrol edin. `xsound` seçildiyse resource çalışıyor olmalıdır. |
-| Bildirim görünmüyor | `Config.EnableNotifications = false` ise bu beklenen davranıştır; açmak için `Config.EnableNotifications` ve `Config.NotifyStyle` değerlerini kontrol edin. |
-| QBCore bağlantısı hazır değil | `qb-core` başlamadan kaynağı başlatmayın. QBCore restart sonrası bağlantı kurulamazsa kaynağı yeniden başlatın. |
-| Restart sonrası eski mangal/slot bekleniyor | Kaynak kalıcılık sağlamaz; restart sonrası geçici entity ve state’in geri yüklenmesi desteklenmiyor. |
+| Grill fails to place or is rejected | Verify the `mangal` item, distance to placement spot, model definition, and resource start order. |
+| Target options do not appear | Check `Config.TargetSystem`, target resource state, and `Config.InteractDistance` (or set `Config.Enable3DText = true`). |
+| NUI menu closes too early | Adjust `Config.NuiMenuDistance` independently of `Config.NuiHudDistance`. |
+| Items missing from recipe menu | Verify raw items exist in inventory and item IDs match `Config.Recipes` exactly. |
+| Cannot collect cooked item | Confirm the grill is in `LIT` state and cooked/undercooked items are registered in inventory. |
+| No grilling audio | Check `Config.EnableSound`, `Config.SoundEngine`, `Config.SoundFile`, and `html/sizzling.ogg` (or `xsound` status). |
+| Notifications not shown | `Config.EnableNotifications` is `false` by default; enable it and verify `Config.NotifyStyle`. |
+| QBCore bridge not ready | Ensure `qb-core` starts before `gnsh-bbq` and restart `gnsh-bbq` if `qb-core` was restarted. |
 
-## Operasyon ve sürüm
+## Operations and Versioning
 
-- Mevcut resource sürümü `fxmanifest.lua` içinde `1.0.0` olarak tanımlıdır.
-- Değişiklik geçmişi [`CHANGELOG.md`](CHANGELOG.md) içinde tutulur.
-- Geliştirme ve release akışı [`CONTRIBUTING.md`](CONTRIBUTING.md) içindedir.
-- Staging ve üretim öncesi doğrulama, sunucu yöneticisinin kendi dağıtım süreci içinde yapılmalıdır.
-- CI workflow’ı Lua syntax, manifest varlığı ve yüksek güvenli credential pattern’leri
-  için kontrol yapar: [`.github/workflows/validate.yml`](.github/workflows/validate.yml).
-- `main` production, `dev` entegrasyon branch’i olarak dokümante edilmiştir. Üretim
-  sunucusuna development branch’i doğrudan dağıtmayın.
+- Resource version in [`fxmanifest.lua`](fxmanifest.lua): `1.0.0`
+- Release history: [`CHANGELOG.md`](CHANGELOG.md)
+- Contribution and release workflow: [`CONTRIBUTING.md`](CONTRIBUTING.md) (`main` for releases, `dev` for integration)
+- CI checks Lua syntax (with FiveM backtick hash normalization), manifest presence, and high-confidence credential patterns via [`.github/workflows/validate.yml`](.github/workflows/validate.yml).
 
-README’de roadmap bölümü eklenmedi; repository’de doğrulanmış bir gelecek özellik listesi
-bulunmuyor.
+## License
+
+Licensed under the [MIT License](LICENSE).
